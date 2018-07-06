@@ -16,7 +16,7 @@ module.exports = (server) => {
 
   const createChildAccount = (parentKey, balance) => {
     const childKey = StellarSdk.Keypair.random()
-    return server.loadAccount(parentKeyå.publicKey()).then((account) => {
+    return server.loadAccount(parentKey.publicKey()).then((account) => {
       const transaction = new StellarSdk.TransactionBuilder(account)
         .addOperation(StellarSdk.Operation.createAccount({
           destination: childKey.publicKey(),
@@ -90,6 +90,32 @@ module.exports = (server) => {
       })
   }
 
+  const makeOffer = (srcKey, sellingAsset, buyingAsset, sellingAmount, buyingPrice) => {
+    return server.loadAccount(srcKey.publicKey())
+      .then(account => {
+        const transaction = new StellarSdk.TransactionBuilder(account)
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: sellingAsset,
+            buying: buyingAsset,
+            amount: `${sellingAmount}`,
+            price: buyingPrice,
+            source: srcKey.publicKey()
+          }))
+          .addMemo(safeMemoText(`${sellingAsset.getCode()} -> ${buyingAsset.getCode()}`))
+          .build()
+        transaction.sign(srcKey)
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        console.log(`Success! Results: ${result.hash}`)
+        return true
+      })
+      .catch((error) => {
+        console.error(`Something went wrong!, ${error}`)
+        return false
+      })
+  }
+
   const eventCreator = (eventCode, balance, masterAccount, masterAsset) => async () => {
     const issuerAccount = await createChildAccount(masterAccount, 100)
     const distributorAccount = await createChildAccount(issuerAccount, 70)
@@ -104,10 +130,11 @@ module.exports = (server) => {
     }
   }
 
-  const userCreator = (parentAccount, asset) => async () => {
+  const userCreator = (parentAccount, asset, mediumAsset) => async () => {
     return createChildAccount(parentAccount, 3)
       .then(userKey => {
         return changeTrust(userKey, asset, 100) // FIXME: remove hardcoded limit
+          .then(() => changeTrust(userKey, mediumAsset, 100))
           .then(() => userKey)
       })
       .then(userKey => {
@@ -126,5 +153,6 @@ module.exports = (server) => {
     transfer,
     eventCreator,
     userCreator,
+    makeOffer
   }
 }
