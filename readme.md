@@ -38,3 +38,7 @@ A ticketing system on distrubuted ledger technology
   - [ ] (optional) Managing ticket operations
 - Reception (at venue)
   - [ ] Scan `QR` code to confirm using the ticket
+
+## Notes
+
+- Bridge server see: [readme_bridge.md#security](https://github.com/stellar/bridge-server/blob/master/readme_bridge.md#security)
