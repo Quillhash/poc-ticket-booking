@@ -119,7 +119,7 @@ module.exports = (server) => {
   const eventCreator = (eventCode, balance, masterAccount, masterAsset) => async () => {
     const issuerAccount = await createChildAccount(masterAccount, 100)
     const distributorAccount = await createChildAccount(issuerAccount, 70)
-    await changeTrust(distributorAccount, masterAsset.stellarAsset, balance)
+    await changeTrust(distributorAccount, masterAsset, balance)
     await issueAsset(eventCode, issuerAccount, distributorAccount, balance)
 
     return {
@@ -130,11 +130,11 @@ module.exports = (server) => {
     }
   }
 
-  const userCreator = (parentAccount, asset, mediumAsset) => async () => {
+  const userCreator = (parentAccount, asset, masterAsset) => async () => {
     return createChildAccount(parentAccount, 3)
       .then(userKey => {
         return changeTrust(userKey, asset, 100) // FIXME: remove hardcoded limit
-          .then(() => changeTrust(userKey, mediumAsset, 100))
+          .then(() => changeTrust(userKey, masterAsset, 100))
           .then(() => userKey)
       })
       .then(userKey => {
@@ -145,6 +145,21 @@ module.exports = (server) => {
       })
   }
 
+  const queryAllTrades = (srcKey) => {
+    return server.trades()
+      .forAccount(srcKey.publicKey())
+      .call()
+      .then(result => result.records)
+  }
+
+  const queryBalance = (user, asset) => {
+    return server.loadAccount(user.publicKey())
+      .then(account => account.balances.find(balance => 
+        balance.asset_code === asset.getCode() &&
+        balance.asset_issuer === asset.getIssuer())
+      )
+  }
+
   return {
     hasAssetIssued,
     createChildAccount,
@@ -153,6 +168,8 @@ module.exports = (server) => {
     transfer,
     eventCreator,
     userCreator,
-    makeOffer
+    makeOffer,
+    queryAllTrades,
+    queryBalance
   }
 }
