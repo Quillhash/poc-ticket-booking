@@ -2,6 +2,12 @@ const StellarSdk = require('stellar-sdk')
 
 module.exports = (server) => {
   const safeMemoText = (text = '') => {
+    if (!text || text.length <= 28) {
+      return StellarSdk.Memo.text(text || '')
+    }
+
+    console.warn(`memo text cut off: ${text}`)
+    
     return StellarSdk.Memo.text(text.substring(0, 28))
 
   }
@@ -81,7 +87,7 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results: ${result.hash}`)
+        console.log(`Success! Results: ${result._links.transaction.href}`)
         return true
       })
       .catch((error) => {
@@ -107,7 +113,7 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results: ${result.hash}`)
+        console.log(`Success! Results: ${result._links.transaction.href}`)
         return true
       })
       .catch((error) => {
@@ -149,7 +155,9 @@ module.exports = (server) => {
     return server.trades()
       .forAccount(srcKey.publicKey())
       .call()
-      .then(result => result.records)
+      .then(result => 
+        result.records
+      )
   }
 
   const queryBalance = (user, asset) => {

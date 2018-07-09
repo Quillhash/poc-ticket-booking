@@ -30,14 +30,17 @@ const ticketingFactory = (stellarServer, masterAsset, masterAssetdistributor) =>
 
     const [totalBuyTrades, totalSellTrades] = await stellarServer.queryAllTrades(user)
       .then(trades => {
-        const compareTradeAsset = (baseAsset, counterAsset) => (trade) =>
+        const compareTradeAsset = (baseAsset, counterAsset, counterAccount) => (trade) =>
           trade.base_asset_code === baseAsset.getCode()
           && trade.base_asset_issuer === baseAsset.getIssuer()
           && trade.counter_asset_code === counterAsset.getCode()
           && trade.counter_asset_issuer === counterAsset.getIssuer()
+          && trade.counter_account === counterAccount
 
-        const buyTrades = trades.filter(compareTradeAsset(masterAsset, event.asset)).length
-        const sellTrades = trades.filter(compareTradeAsset(event.asset, masterAsset)).length
+        // count transactions that the counter party is Event Distributor
+        const eventDistributorPk = event.distributor.publicKey()
+        const buyTrades = trades.filter(compareTradeAsset(masterAsset, event.asset, eventDistributorPk)).length
+        const sellTrades = trades.filter(compareTradeAsset(event.asset, masterAsset, eventDistributorPk)).length
 
         return [buyTrades, sellTrades]
       })
