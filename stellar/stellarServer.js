@@ -1,6 +1,13 @@
 const StellarSdk = require('stellar-sdk')
 
 module.exports = (server) => {
+
+  let masterSigner = null
+
+  setMasterSigner = (signer) => {
+    masterSigner = signer
+  }
+
   const safeMemoText = (text = '') => {
     if (!text || text.length <= 28) {
       return StellarSdk.Memo.text(text || '')
@@ -31,9 +38,24 @@ module.exports = (server) => {
         }))
         .addMemo(safeMemoText(`parent: ${parentKey.publicKey()} `))
         .build()
-      transaction.sign(parentKey)
+      transaction.sign(masterSigner || parentKey)
       return server.submitTransaction(transaction)
-    }).then(response => childKey)
+    })
+    .then(response => server.loadAccount(childKey.publicKey()))
+    .then(childAccount => {
+      const transaction = new StellarSdk.TransactionBuilder(childAccount)
+      .addOperation(StellarSdk.Operation.setOptions({
+        signer: {
+          ed25519PublicKey: parentKey.publicKey(),
+          weight: 1
+        }
+      }))
+      .addMemo(safeMemoText(`set options: signer`))
+      .build()
+      transaction.sign(childKey)
+      return server.submitTransaction(transaction)
+    })
+    .then(response => childKey)
       .catch((error) => {
         console.error(`Something went wrong!, ${error}`)
         return false
@@ -50,7 +72,7 @@ module.exports = (server) => {
           }))
           .addMemo(safeMemoText(`trust: ${limit} ${asset.getCode()}`))
           .build()
-        transaction.sign(accountKey)
+        transaction.sign(masterSigner || accountKey)
 
         return server.submitTransaction(transaction)
       })
@@ -82,7 +104,7 @@ module.exports = (server) => {
           }))
           .addMemo(safeMemoText(`Tx: ${Date.now()}`))
           .build()
-        transaction.sign(srcKey)
+        transaction.sign(masterSigner || srcKey)
         return server.submitTransaction(transaction)
       })
       .then((result) => {
@@ -108,7 +130,7 @@ module.exports = (server) => {
           }))
           .addMemo(safeMemoText(`${sellingAsset.getCode()} -> ${buyingAsset.getCode()}`))
           .build()
-        transaction.sign(srcKey)
+        transaction.sign(masterSigner || srcKey)
         return server.submitTransaction(transaction)
       })
       .then((result) => {
@@ -123,7 +145,7 @@ module.exports = (server) => {
 
   const eventCreator = (eventCode, balance, masterAccount, masterAsset) => async () => {
     const issuerAccount = await createChildAccount(masterAccount, 100)
-    const distributorAccount = await createChildAccount(issuerAccount, 70)
+    const distributorAccount = await createChildAccount(masterAccount, 70)
     await changeTrust(distributorAccount, masterAsset, balance)
     await issueAsset(eventCode, issuerAccount, distributorAccount, balance)
 
@@ -136,7 +158,7 @@ module.exports = (server) => {
   }
 
   const userCreator = (parentAccount, asset, masterAsset) => async () => {
-    return createChildAccount(parentAccount, 3)
+    return createChildAccount(masterSigner, 3)
       .then(userKey => {
         return changeTrust(userKey, asset, 100) // FIXME: remove hardcoded limit
           .then(() => changeTrust(userKey, masterAsset, 100))
@@ -181,6 +203,7 @@ module.exports = (server) => {
   }
 
   return {
+    setMasterSigner,
     hasAssetIssued,
     createChildAccount,
     changeTrust,

@@ -1,7 +1,7 @@
-const ticketingFactory = (stellarServer, masterAsset, masterAssetdistributor) => {
+const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
   const bookTicket = async (user, event, amount = 1) => {
     // transfer masterAsset to user
-    await stellarServer.transfer(masterAssetdistributor, user.publicKey(), amount, masterAsset)
+    await stellarServer.transfer(masterAccount, user.publicKey(), amount, masterAsset)
       .then(() => console.log(`transfer masterAsset to user: completed`))
 
     // offer eventAsset

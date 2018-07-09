@@ -10,18 +10,21 @@ const start2 = async () => {
   const ticketingFactory = require('./ticketingFactory')
 
   const masterAsset = config.masterAsset
-  const masterDistributorKey = config.masterDistributorKey
+  const masterAccount = config.masterDistributorKey
 
-  const ticketing = ticketingFactory(stellarServer, masterAsset, masterDistributorKey)
+  stellarServer.setMasterSigner(masterAccount)
+
+  const ticketing = ticketingFactory(stellarServer, masterAccount, masterAsset)
   const eventCode = 'KKK'
 
   // create an event
-  const event = await eventStore.getOrCreate(eventCode, stellarServer.eventCreator(eventCode, 1000, masterDistributorKey, masterAsset))
+  const event = await eventStore.getOrCreate(eventCode, stellarServer.eventCreator(eventCode, 1000, masterAccount, masterAsset))
 
   // create a user
   const userId = 'superman'
   const user = await userStore.getOrCreate(userId, stellarServer.userCreator(event.distributor, event.asset, masterAsset))
 
+  console.log(masterAccount.publicKey())
   console.log(event)
   console.log(event.issuer.publicKey())
   console.log(user)
