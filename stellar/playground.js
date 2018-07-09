@@ -23,11 +23,16 @@ const start2 = async () => {
   const user = await userStore.getOrCreate(userId, stellarServer.userCreator(event.distributor, event.asset, masterAsset))
 
   console.log(event)
+  console.log(event.issuer.publicKey())
   console.log(user)
 
   // perform booking ticket
   return ticketing.bookTicket(user.keypair, event)
     .then(() => console.log( `booking completed`))
+    .then(() => ticketing.queryTicketCount(user.keypair, event))
+    .then(ticketCount => console.log( `total tickets: ${ticketCount}`))
+    .then(() => ticketing.burnTicket(user.keypair, event))
+    .then(() => console.log( `burning completed`))
     .then(() => ticketing.queryTicketCount(user.keypair, event))
     .then(ticketCount => console.log( `total tickets: ${ticketCount}`))
 }

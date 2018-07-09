@@ -27,7 +27,7 @@ module.exports = (server) => {
         .addOperation(StellarSdk.Operation.createAccount({
           destination: childKey.publicKey(),
           source: parentKey.publicKey(),
-          startingBalance: `${balance}` // TODO: starting_balance to be configurable
+          startingBalance: `${balance}`
         }))
         .addMemo(safeMemoText(`parent: ${parentKey.publicKey()} `))
         .build()
@@ -38,7 +38,6 @@ module.exports = (server) => {
         console.error(`Something went wrong!, ${error}`)
         return false
       })
-    // TODO: store key in account store
   }
 
   const changeTrust = (accountKey, asset, limit) => {
@@ -151,9 +150,22 @@ module.exports = (server) => {
       })
   }
 
-  const queryAllTrades = (srcKey) => {
+  const queryAllTrades = (srcKey, limit = 10, order = 'asc') => {
     return server.trades()
       .forAccount(srcKey.publicKey())
+      .limit(limit)
+      .order(order)
+      .call()
+      .then(result => 
+        result.records
+      )
+  }
+
+  const queryOperations = (srcKey, limit=10, order = 'asc') => {
+    return server.operations()
+      .forAccount(srcKey.publicKey())
+      .limit(limit)
+      .order(order)
       .call()
       .then(result => 
         result.records
@@ -178,6 +190,7 @@ module.exports = (server) => {
     userCreator,
     makeOffer,
     queryAllTrades,
-    queryBalance
+    queryBalance,
+    queryOperations
   }
 }
