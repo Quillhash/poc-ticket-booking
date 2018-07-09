@@ -152,8 +152,8 @@ module.exports = (server) => {
     return {
       code: eventCode,
       limit: balance,
-      issuer: issuerAccount.secret(),
-      distributor: distributorAccount.secret()
+      issuer: issuerAccount.publicKey(),
+      distributor: distributorAccount.publicKey()
     }
   }
 
@@ -166,8 +166,7 @@ module.exports = (server) => {
       })
       .then(userKey => {
         return {
-          publicKey: userKey.publicKey(),
-          secret: userKey.secret()
+          publicKey: userKey.publicKey()
         }
       })
   }

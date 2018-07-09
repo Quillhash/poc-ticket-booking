@@ -12,7 +12,6 @@ const userStoreFactory = (userRepository) => {
         user = {
           userId: userId,
           account_id: stellarUser.publicKey,
-          secret: stellarUser.secret,
           memo: Date.now()
         }
 

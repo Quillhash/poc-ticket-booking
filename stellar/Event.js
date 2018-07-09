@@ -17,11 +17,11 @@ class Event {
   }
 
   get issuer() {
-    return StellarSdk.Keypair.fromSecret(this._issuer)
+    return StellarSdk.Keypair.fromPublicKey(this._issuer)
   }
 
   get distributor() {
-    return StellarSdk.Keypair.fromSecret(this._distributor)
+    return StellarSdk.Keypair.fromPublicKey(this._distributor)
   }
 
   get asset() {
