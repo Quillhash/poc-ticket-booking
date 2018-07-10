@@ -1,5 +1,7 @@
 const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
   const bookTicket = async (user, event, amount = 1) => {
+    await stellarServer.changeTrust(user, event.asset, 100) // TODO: remove hard code trust limit
+      .then(() => console.log(`change trust: completed`))
     // transfer masterAsset to user
     await stellarServer.transfer(masterAccount, user.publicKey(), amount, masterAsset)
       .then(() => console.log(`transfer masterAsset to user: completed`))

@@ -8,6 +8,15 @@ module.exports = (server) => {
     masterSigner = signer
   }
 
+  const getErrorCode = (err) => {
+    try {
+      return err.response.data.extras.result_codes.operations.join(', ')
+    }
+    catch(errro) {
+      return err
+    } 
+  }
+
   const safeMemoText = (text = '') => {
     if (!text || text.length <= 28) {
       return StellarSdk.Memo.text(text || '')
@@ -57,27 +66,35 @@ module.exports = (server) => {
     })
     .then(response => childKey)
       .catch((error) => {
-        console.error(`Something went wrong!, ${error}`)
+        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
         return false
       })
   }
 
-  const changeTrust = (accountKey, asset, limit) => {
+  const changeTrust = (accountKey, asset, limit = null) => {
     return server.loadAccount(accountKey.publicKey())
-      .then(account => {
+      .then(account => [account, account.balances.find(balance => 
+        balance.asset_code === asset.getCode() &&
+        balance.asset_issuer === asset.getIssuer()) != null
+      ])
+      .then(([account, trusted]) => {
+        if (trusted) {
+          return true;
+        }
+
+        let changeTrustOpt = { asset }
+        limit != null && !isNaN(limit) && (changeTrustOpt.limit = `${limit}`)
+        
         const transaction = new StellarSdk.TransactionBuilder(account)
-          .addOperation(StellarSdk.Operation.changeTrust({
-            asset: asset,
-            limit: `${limit}`
-          }))
-          .addMemo(safeMemoText(`trust: ${limit} ${asset.getCode()}`))
+          .addOperation(StellarSdk.Operation.changeTrust(changeTrustOpt))
+          .addMemo(safeMemoText(`trust: ${asset.getCode()}`))
           .build()
         transaction.sign(masterSigner || accountKey)
 
         return server.submitTransaction(transaction)
       })
       .catch((error) => {
-        console.error(`Something went wrong!, ${error}`)
+        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
       })
   }
 
@@ -112,7 +129,7 @@ module.exports = (server) => {
         return true
       })
       .catch((error) => {
-        console.error(`Something went wrong!, ${error}`)
+        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
         return false
       })
   }
@@ -138,14 +155,14 @@ module.exports = (server) => {
         return true
       })
       .catch((error) => {
-        console.error(`Something went wrong!, ${error}`)
+        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
         return false
       })
   }
 
   const eventCreator = (eventCode, balance, masterAccount, masterAsset) => async () => {
-    const issuerAccount = await createChildAccount(masterAccount, 100)
-    const distributorAccount = await createChildAccount(masterAccount, 70)
+    const issuerAccount = await createChildAccount(masterAccount, 10)
+    const distributorAccount = await createChildAccount(masterAccount, 50)
     await changeTrust(distributorAccount, masterAsset, balance)
     await issueAsset(eventCode, issuerAccount, distributorAccount, balance)
 
@@ -158,7 +175,7 @@ module.exports = (server) => {
   }
 
   const userCreator = (parentAccount, asset, masterAsset) => async () => {
-    return createChildAccount(masterSigner, 3)
+    return createChildAccount(masterSigner, 5) // TODO: make funding configurable
       .then(userKey => {
         return changeTrust(userKey, asset, 100) // FIXME: remove hardcoded limit
           .then(() => changeTrust(userKey, masterAsset, 100))

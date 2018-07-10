@@ -15,13 +15,13 @@ const start2 = async () => {
   stellarServer.setMasterSigner(masterAccount)
 
   const ticketing = ticketingFactory(stellarServer, masterAccount, masterAsset)
-  const eventCode = 'KKKI'
+  const eventCode = 'KKK'
 
   // create an event
   const event = await eventStore.getOrCreate(eventCode, stellarServer.eventCreator(eventCode, 1000, masterAccount, masterAsset))
 
   // create a user
-  const userId = 'superman5'
+  const userId = 'superman'
   const user = await userStore.getOrCreate(userId, stellarServer.userCreator(event.distributor, event.asset, masterAsset))
 
   console.log(masterAccount.publicKey())
