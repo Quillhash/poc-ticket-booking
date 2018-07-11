@@ -1,6 +1,6 @@
 const flatFileRepository = (filePath) => {
-  const { sync } = require('flat-file-db');
-  const db = sync(filePath);
+  const { sync } = require('flat-file-db')
+  const db = sync(filePath)
 
   const put = (key, value) => {
     return new Promise((resolve) => db.put(key, value, resolve))
@@ -18,6 +18,10 @@ const flatFileRepository = (filePath) => {
     return new Promise((resolve) => db.del(key, resolve))
   }
 
+  const keys = async() => {
+    return db.keys()
+  }
+
   const close = () => {
     db.close()
   }
@@ -26,7 +30,9 @@ const flatFileRepository = (filePath) => {
     put,
     get,
     del,
-    close
+    close,
+    has,
+    keys
   }
 }
 

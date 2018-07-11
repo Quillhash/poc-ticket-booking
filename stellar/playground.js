@@ -1,7 +1,7 @@
 require('dotenv/config')
 
 const start2 = async () => {
-  const config = require('./config')
+  const config = require('../event/config')
   
   // initial system
   const stellarServer = require('./initStellarServer')()
@@ -17,12 +17,15 @@ const start2 = async () => {
   const ticketing = ticketingFactory(stellarServer, masterAccount, masterAsset)
   const eventCode = 'KKK'
 
+  eventStore.setEventCreator(stellarServer.eventCreator(masterAccount, masterAsset))
+  userStore.setUserCreator(stellarServer.userCreator(masterAsset))
+
   // create an event
-  const event = await eventStore.getOrCreate(eventCode, stellarServer.eventCreator(eventCode, 1000, masterAccount, masterAsset))
+  const event = await eventStore.getOrCreate(eventCode, 1000)
 
   // create a user
   const userId = 'superman'
-  const user = await userStore.getOrCreate(userId, stellarServer.userCreator(event.distributor, event.asset, masterAsset))
+  const user = await userStore.getOrCreate(userId)
 
   console.log(masterAccount.publicKey())
   console.log(event)
@@ -31,11 +34,11 @@ const start2 = async () => {
 
   // perform booking ticket
   return ticketing.bookTicket(user.keypair, event)
-    .then(() => console.log( `booking completed`))
+    .then(() => console.log( 'booking completed'))
     .then(() => ticketing.queryTicketCount(user.keypair, event))
     .then(ticketCount => console.log( `total tickets: ${ticketCount}`))
     .then(() => ticketing.burnTicket(user.keypair, event))
-    .then(() => console.log( `burning completed`))
+    .then(() => console.log( 'burning completed'))
     .then(() => ticketing.queryTicketCount(user.keypair, event))
     .then(ticketCount => console.log( `total tickets: ${ticketCount}`))
 }

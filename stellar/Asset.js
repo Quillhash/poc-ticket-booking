@@ -1,4 +1,4 @@
-const { Keypair, Asset: StellarAsset } = require('stellar-sdk')
+const StellarSdk = require('stellar-sdk')
 
 class Asset {
   constructor(code, issuer) {
@@ -7,7 +7,7 @@ class Asset {
   }
 
   get stellarAsset() {
-    return new StellarAsset(this._code, this._issuer.publicKey())
+    return new StellarSdk.Asset(this._code, this._issuer.publicKey())
   }
 
   get code() {

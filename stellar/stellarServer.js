@@ -4,28 +4,28 @@ module.exports = (server) => {
 
   let masterSigner = null
 
-  setMasterSigner = (signer) => {
+  const setMasterSigner = (signer) => {
     masterSigner = signer
   }
 
   const getErrorCode = (err) => {
     try {
-      return err.response.data.extras.result_codes.operations.join(', ')
+      const code = err.response.data.extras.result_codes
+      return code.operations 
+        ? code.operations.join(', ') 
+        : code.transaction 
+          ? code.transaction.toString()
+          : err
     }
-    catch(errro) {
+    catch (error) {
       return err
-    } 
+    }
   }
 
   const safeMemoText = (text = '') => {
-    if (!text || text.length <= 28) {
-      return StellarSdk.Memo.text(text || '')
-    }
-
-    console.warn(`memo text cut off: ${text}`)
-    
-    return StellarSdk.Memo.text(text.substring(0, 28))
-
+    return (!text || text.length <= 28) 
+      ? StellarSdk.Memo.text(text || '')
+      : StellarSdk.Memo.text(text.substring(0, 28))
   }
 
   const hasAssetIssued = (asset) => {
@@ -45,46 +45,51 @@ module.exports = (server) => {
           source: parentKey.publicKey(),
           startingBalance: `${balance}`
         }))
-        .addMemo(safeMemoText(`parent: ${parentKey.publicKey()} `))
+        .addMemo(safeMemoText(`${parentKey.publicKey()} `))
         .build()
       transaction.sign(masterSigner || parentKey)
       return server.submitTransaction(transaction)
     })
-    .then(response => server.loadAccount(childKey.publicKey()))
-    .then(childAccount => {
-      const transaction = new StellarSdk.TransactionBuilder(childAccount)
-      .addOperation(StellarSdk.Operation.setOptions({
-        signer: {
-          ed25519PublicKey: parentKey.publicKey(),
-          weight: 1
-        }
-      }))
-      .addMemo(safeMemoText(`set options: signer`))
-      .build()
-      transaction.sign(childKey)
-      return server.submitTransaction(transaction)
-    })
-    .then(response => childKey)
+      .then(() => server.loadAccount(childKey.publicKey()))
+      .then(childAccount => {
+        const transaction = new StellarSdk.TransactionBuilder(childAccount)
+          .addOperation(StellarSdk.Operation.setOptions({
+            signer: {
+              ed25519PublicKey: parentKey.publicKey(),
+              weight: 1
+            }
+          }))
+          .addMemo(safeMemoText('set options: signer'))
+          .build()
+        transaction.sign(childKey)
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        console.log(`Success! Results (createChildAccount): ${result._links.transaction.href}`)
+        return result
+      })
+      .then(() => childKey)
       .catch((error) => {
-        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
-        return false
+        const errMsg = `Something went wrong! (createChildAccount): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
       })
   }
 
   const changeTrust = (accountKey, asset, limit = null) => {
     return server.loadAccount(accountKey.publicKey())
-      .then(account => [account, account.balances.find(balance => 
+      .then(account => [account, account.balances.find(balance =>
         balance.asset_code === asset.getCode() &&
         balance.asset_issuer === asset.getIssuer()) != null
       ])
       .then(([account, trusted]) => {
         if (trusted) {
-          return true;
+          return null
         }
 
         let changeTrustOpt = { asset }
         limit != null && !isNaN(limit) && (changeTrustOpt.limit = `${limit}`)
-        
+
         const transaction = new StellarSdk.TransactionBuilder(account)
           .addOperation(StellarSdk.Operation.changeTrust(changeTrustOpt))
           .addMemo(safeMemoText(`trust: ${asset.getCode()}`))
@@ -93,8 +98,18 @@ module.exports = (server) => {
 
         return server.submitTransaction(transaction)
       })
+      .then((result) => {
+        if (!result) {
+          console.log('Already trusted')  
+        } else {
+          console.log(`Success! Results (changeTrust): ${result._links.transaction.href}`)
+        }
+        return true
+      })
       .catch((error) => {
-        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
+        const errMsg = `Something went wrong! (changeTrust): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
       })
   }
 
@@ -125,12 +140,13 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results: ${result._links.transaction.href}`)
+        console.log(`Success! Results (transfer): ${result._links.transaction.href}`)
         return true
       })
       .catch((error) => {
-        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
-        return false
+        const errMsg = `Something went wrong! (transfer): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
       })
   }
 
@@ -151,34 +167,34 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results: ${result._links.transaction.href}`)
+        console.log(`Success! Results (makeOffer): ${result._links.transaction.href}`)
         return true
       })
       .catch((error) => {
-        console.warn(`Something went wrong!, ${getErrorCode(error)}`)
-        return false
+        const errMsg = `Something went wrong! (makeOffer): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
       })
   }
 
-  const eventCreator = (eventCode, balance, masterAccount, masterAsset) => async () => {
+  const eventCreator = (masterAccount, masterAsset) => async (eventCode, limit) => {
     const issuerAccount = await createChildAccount(masterAccount, 10)
     const distributorAccount = await createChildAccount(masterAccount, 50)
-    await changeTrust(distributorAccount, masterAsset, balance)
-    await issueAsset(eventCode, issuerAccount, distributorAccount, balance)
+    await changeTrust(distributorAccount, masterAsset, limit)
+    await issueAsset(eventCode, issuerAccount, distributorAccount, limit)
 
     return {
       code: eventCode,
-      limit: balance,
+      limit: limit,
       issuer: issuerAccount.publicKey(),
       distributor: distributorAccount.publicKey()
     }
   }
 
-  const userCreator = (parentAccount, asset, masterAsset) => async () => {
+  const userCreator = (masterAsset) => async () => {
     return createChildAccount(masterSigner, 5) // TODO: make funding configurable
       .then(userKey => {
-        return changeTrust(userKey, asset, 100) // FIXME: remove hardcoded limit
-          .then(() => changeTrust(userKey, masterAsset, 100))
+        return changeTrust(userKey, masterAsset, 100) // FIXME: remove hardcoded limit
           .then(() => userKey)
       })
       .then(userKey => {
@@ -194,28 +210,33 @@ module.exports = (server) => {
       .limit(limit)
       .order(order)
       .call()
-      .then(result => 
+      .then(result =>
         result.records
       )
   }
 
-  const queryOperations = (srcKey, limit=10, order = 'asc') => {
+  const queryOperations = (srcKey, limit = 10, order = 'asc') => {
     return server.operations()
       .forAccount(srcKey.publicKey())
       .limit(limit)
       .order(order)
       .call()
-      .then(result => 
+      .then(result =>
         result.records
       )
   }
 
   const queryBalance = (user, asset) => {
     return server.loadAccount(user.publicKey())
-      .then(account => account.balances.find(balance => 
+      .then(account => account.balances.find(balance =>
         balance.asset_code === asset.getCode() &&
         balance.asset_issuer === asset.getIssuer())
       )
+  }
+
+  const queryAllAsstes = (user) => {
+    return server.loadAccount(user.publicKey())
+      .then(account => account.balances)
   }
 
   return {
@@ -230,6 +251,7 @@ module.exports = (server) => {
     makeOffer,
     queryAllTrades,
     queryBalance,
-    queryOperations
+    queryOperations,
+    queryAllAsstes
   }
 }

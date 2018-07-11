@@ -1,7 +1,13 @@
 const { User } = require('./User')
 
 const userStoreFactory = (userRepository) => {
-  const getOrCreate = async (userId, stellarUserCreator) => {
+  let stellarUserCreator = null
+
+  const setUserCreator = (userCreator) => {
+    stellarUserCreator = userCreator
+  }
+
+  const getOrCreate = async (userId) => {
     let user = await userRepository.get(userId)
     if (user) {
       return User.fromJSON(user)
@@ -20,8 +26,16 @@ const userStoreFactory = (userRepository) => {
       })
   }
 
+  const get = async (userId) => {
+    let user = await userRepository.get(userId)
+
+    return user ? User.fromJSON(user) : null
+  }
+
   return {
-    getOrCreate
+    setUserCreator,
+    getOrCreate,
+    get
   }
 }
 

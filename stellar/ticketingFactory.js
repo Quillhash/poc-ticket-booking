@@ -1,22 +1,29 @@
 const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
   const bookTicket = async (user, event, amount = 1) => {
     await stellarServer.changeTrust(user, event.asset, 100) // TODO: remove hard code trust limit
-      .then(() => console.log(`change trust: completed`))
+      .then(() => console.log('change trust: completed'))
     // transfer masterAsset to user
     await stellarServer.transfer(masterAccount, user.publicKey(), amount, masterAsset)
-      .then(() => console.log(`transfer masterAsset to user: completed`))
+      .then(() => console.log('transfer masterAsset to user: completed'))
 
     // offer eventAsset
     await stellarServer.makeOffer(event.distributor, event.asset, masterAsset, amount, amount)
-      .then(() => console.log(`offer eventAsset`))
+      .then(() => console.log('offer eventAsset'))
 
     // user bid the eventAsset
     await stellarServer.makeOffer(user, masterAsset, event.asset, amount, amount)
-      .then(() => console.log(`user bid the eventAsset`))
+      .then(() => console.log('user bid the eventAsset'))
 
     // TODO: remove random number
     // return tracking id if success
     return Math.random()
+  }
+
+  const queryRemainingTickets = (event) => {
+    return stellarServer.queryBalance(event.distributor, event.asset)
+      .then(result => {
+        return result && result.balance
+      })
   }
 
   const queryTicketCount = async (user, event) => {
@@ -58,20 +65,30 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
         return [buyTrades, returnTrades]
       })
 
-    return totalTicketAvailable = totalBuyTrades - totalReturnTrades - burntBalance
-
-    return totalTicketAvailable < 0 ? 0 : Math.min(currentBalance, totalTicketAvailable)
+    const totalBalance = totalBuyTrades - totalReturnTrades - burntBalance
+    return Math.min(currentBalance, totalBalance < 0 ? 0 : totalBalance)
   }
 
   const burnTicket = (user, event, amount = 1) => {
     return stellarServer.transfer(user, event.issuer.publicKey(), amount, event.asset)
-      .then(() => console.log(`burn token asset to issuer: completed`))
+      .then(() => console.log('burn token asset to issuer: completed'))
+  }
+
+  const queryBookedTickets = (user) => {
+    return stellarServer.queryAllAsstes(user)
+      .then(asset => asset.filter(a => a.asset_type !== 'native' && a.balance > 0)
+        .map(a => ({
+          eventCode: a.asset_code,
+          balance: a.balance
+        })))
   }
 
   return {
     bookTicket,
+    queryRemainingTickets,
     queryTicketCount,
-    burnTicket
+    burnTicket,
+    queryBookedTickets,
   }
 }
 
