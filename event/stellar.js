@@ -1,35 +1,39 @@
-const createEvent = () => {
-
-}
-
-const getAllEvents = () => {
-  return []
-}
-
-const getEvent = () => {
-  
-}
-
-const bookEvent = (userId, eventId) => {
-  return {
-    success: true,
-    ticketId: '1234',
-    errorMsg: ''
+module.exports = (stellarEngine) => {
+  const createEvent = (event) => {
+    return stellarEngine.createEvent(event)
   }
-}
+  
+  const getAllEvents = () => {
+    return stellarEngine.getAllEvents()
+  }
 
-const isBooked = () => {
+  const bookEvent = (userId, eventId) => {
+    return stellarEngine.bookEvent(userId, eventId)
+  }
 
-}
+  const getBookedEvents = (userId) => {
+    return stellarEngine.getBookedEvents(userId)
+  }
 
-const getBookedEvents = () => {
-  return []
-}
+  const getBookedCount = (userId, eventCode) => {
+    return stellarEngine.getBookedCount(userId, eventCode)
+  }
+  
+  const cancelBooking = (userId, eventCode)=> {
+    return stellarEngine.cancelBooking(userId, eventCode)
+  }
 
-const cancelBooking = ()=> {
+  const cancelEvent = (eventCode)=> {
+    return stellarEngine.cancelEvent(eventCode)
+  }
 
-}
-
-module.exports = {
-  getAllEvents
+  return {
+    createEvent,
+    getAllEvents,
+    bookEvent,
+    getBookedEvents,
+    cancelBooking,
+    cancelEvent,
+    getBookedCount
+  }
 }

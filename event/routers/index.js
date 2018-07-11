@@ -1,16 +1,16 @@
-const routers = (app) => {
-  const { attendee, organizer } = require('../api')
+const routers = (stellarEngine) => {
+  const router = require('express').Router()
 
-  app.get('/', (req, res) => {
-    res.status(200).send('Say Meow 🐱')
+  const attendeeController = require('./attendeeController')(stellarEngine)
+  const organizerController = require('./organizerController')(stellarEngine)
+
+  router.use('/attendee', attendeeController)
+  router.use('/organizer', organizerController)
+  router.use('/', (req, res) => {
+    res.status(200).send('OK')
   })
 
-  app.use('/attendee', attendee)
-  app.use('/organizer', organizer)
+  return router
 }
-
-
-
-
 
 module.exports = routers

@@ -16,18 +16,32 @@ module.exports = (config) => {
   const createEvent = (event) => {
     const eventCode = event.code
     const limit = event.limit
-    return eventStore.getOrCreate(eventCode, limit).then(e => ({
-      eventCode: e.code,
-      limit: e.limit,
-    }))
+    return eventStore.getOrCreate(eventCode, limit)
+      .then(e => ({
+        eventCode: e.code,
+        limit: e.limit,
+      }))
+      .then(e => {
+        console.log(e)
+        return e
+      })
   }
 
-  const getAllEvents = () => {
+  const getAllEvents = async () => {
     return eventStore.getAllEvents()
       .then(events => events.map(e => ({
         eventCode: e.code,
         limit: e.limit,
       })))
+      .then(events => events.map(e => 
+        getRemainingTicket(e.eventCode)
+          .then(remaining => {
+            e.available = remaining
+            return e
+          })
+      )).then(events => 
+        Promise.all(events)
+      )
   }
 
   const bookEvent = async (userId, eventCode) => {
@@ -64,14 +78,14 @@ module.exports = (config) => {
     const bookedTicketsPromise = await ticketing.queryBookedTickets(user.keypair)
       .then(ticktes => ticktes.map(t => eventStore.get(t.eventCode)
         .then(e => {
-          e != null && (e.balance = t.balance)
+          e != null && (e.amount = t.balance)
           return e
         })))
       
     const bookedTickets = (await Promise.all(bookedTicketsPromise))
       .filter(t => t != null).map(t => ({
         eventCode: t.code,
-        balance: t.balance
+        amount: t.amount
       }))
 
     return bookedTickets

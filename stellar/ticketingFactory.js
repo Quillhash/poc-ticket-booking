@@ -22,7 +22,7 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
   const queryRemainingTickets = (event) => {
     return stellarServer.queryBalance(event.distributor, event.asset)
       .then(result => {
-        return result && result.balance
+        return result && parseInt(result.balance)
       })
   }
 

@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}/stellar/playground.js",
+            "program": "${workspaceFolder}/event/index.js",
         }
     ]
 }
