@@ -1,17 +1,17 @@
 module.exports = (config) => {
-  const stellarServer = require('./initStellarServer')()
+  const stellarWrapper = require('./initStellarWrapper')()
   const userStore = require('./initUserStore')(config)
   const eventStore = require('./initEventStore')(config)
-  const ticketingFactory = require('./ticketingFactory')
+  const ticketingFactory = require('./ticketing')
 
   const masterAsset = config.masterAsset
   const masterAccount = config.masterDistributorKey
 
-  stellarServer.setMasterSigner(masterAccount)
-  const ticketing = ticketingFactory(stellarServer, masterAccount, masterAsset)
+  stellarWrapper.setMasterSigner(masterAccount)
+  const ticketing = ticketingFactory(stellarWrapper, masterAccount, masterAsset)
 
-  eventStore.setEventCreator(stellarServer.eventCreator(masterAccount, masterAsset))
-  userStore.setUserCreator(stellarServer.userCreator( masterAsset))
+  eventStore.setEventCreator(stellarWrapper.eventCreator(masterAccount, masterAsset))
+  userStore.setUserCreator(stellarWrapper.userCreator( masterAsset))
 
   const createEvent = (event) => {
     const eventCode = event.code

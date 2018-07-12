@@ -1,17 +1,17 @@
-const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
+const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
   const bookTicket = async (user, event, amount = 1) => {
-    await stellarServer.changeTrust(user, event.asset, 100) // TODO: remove hard code trust limit
+    await stellarWrapper.changeTrust(user, event.asset, 100) // TODO: remove hard code trust limit
       .then(() => console.log('change trust: completed'))
     // transfer masterAsset to user
-    await stellarServer.transfer(masterAccount, user.publicKey(), amount, masterAsset)
+    await stellarWrapper.transfer(masterAccount, user.publicKey(), amount, masterAsset)
       .then(() => console.log('transfer masterAsset to user: completed'))
 
     // offer eventAsset
-    await stellarServer.makeOffer(event.distributor, event.asset, masterAsset, amount, amount)
+    await stellarWrapper.makeOffer(event.distributor, event.asset, masterAsset, amount, amount)
       .then(() => console.log('offer eventAsset'))
 
     // user bid the eventAsset
-    await stellarServer.makeOffer(user, masterAsset, event.asset, amount, amount)
+    await stellarWrapper.makeOffer(user, masterAsset, event.asset, amount, amount)
       .then(() => console.log('user bid the eventAsset'))
 
     // TODO: remove random number
@@ -20,7 +20,7 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
   }
 
   const queryRemainingTickets = (event) => {
-    return stellarServer.queryBalance(event.distributor, event.asset)
+    return stellarWrapper.queryBalance(event.distributor, event.asset)
       .then(result => {
         return result && parseInt(result.balance)
       })
@@ -33,12 +33,12 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
     // check total buy and sell
     // compare result
 
-    const currentBalance = await stellarServer.queryBalance(user, event.asset)
+    const currentBalance = await stellarWrapper.queryBalance(user, event.asset)
       .then(result => {
         return result && result.balance
       })
 
-    const burntBalance = await stellarServer.queryOperations(user, 100, 'desc')
+    const burntBalance = await stellarWrapper.queryOperations(user, 100, 'desc')
       .then(operations =>
         operations.filter(operation =>
           operation.type === 'payment'
@@ -48,7 +48,7 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
         ).length
       )
 
-    const [totalBuyTrades, totalReturnTrades] = await stellarServer.queryAllTrades(user, 100)
+    const [totalBuyTrades, totalReturnTrades] = await stellarWrapper.queryAllTrades(user, 100)
       .then(trades => {
         const compareTradeAsset = (baseAsset, counterAsset, counterAccount) => (trade) =>
           trade.base_asset_code === baseAsset.getCode()
@@ -70,12 +70,12 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
   }
 
   const burnTicket = (user, event, amount = 1) => {
-    return stellarServer.transfer(user, event.issuer.publicKey(), amount, event.asset)
+    return stellarWrapper.transfer(user, event.issuer.publicKey(), amount, event.asset)
       .then(() => console.log('burn token asset to issuer: completed'))
   }
 
   const queryBookedTickets = (user) => {
-    return stellarServer.queryAllAsstes(user)
+    return stellarWrapper.queryAllAsstes(user)
       .then(asset => asset.filter(a => a.asset_type !== 'native' && a.balance > 0)
         .map(a => ({
           eventCode: a.asset_code,
