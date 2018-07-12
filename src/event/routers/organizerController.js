@@ -2,7 +2,7 @@
   - create event
   - list all events
   - list events of creator
-  - delete event 
+  - delete event
 */
 
 module.exports = (stellar) => {

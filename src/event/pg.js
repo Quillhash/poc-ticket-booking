@@ -35,8 +35,8 @@ const runner = async (userId, eventCode) => {
 
 runner('superman', 'BBB')
   .then(() => runner('superman2', 'BBB'))
-  .then(() => runner('superman', 'BBC')) 
-  .then(() => runner('superman2', 'BBC')) 
+  .then(() => runner('superman', 'BBC'))
+  .then(() => runner('superman2', 'BBC'))
   .then(() => console.log('done'))
 
 
@@ -48,6 +48,6 @@ runner('superman', 'BBB')
   _code: eventCode,
   _limit: 987,
   _issuer: 'GBFMXUEICUITMA7TS44RJX4A6UB2JVE4LWUO47GONKOVROXHHJLXVTNU'
-  _distributor: 'GD52VUNAQPY662GC2BE6VW2C7B5CICKO5KJXPKPE4WEHNYC6QM2YBJVY' 
+  _distributor: 'GD52VUNAQPY662GC2BE6VW2C7B5CICKO5KJXPKPE4WEHNYC6QM2YBJVY'
 }
 */

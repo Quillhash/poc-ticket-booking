@@ -2,7 +2,7 @@ require('dotenv/config')
 
 const start2 = async () => {
   const config = require('../event/config')
-  
+
   // initial system
   const stellarServer = require('./initStellarServer')()
   const userStore = require('./initUserStore')(config)

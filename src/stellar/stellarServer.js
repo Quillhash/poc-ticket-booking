@@ -11,9 +11,9 @@ module.exports = (server) => {
   const getErrorCode = (err) => {
     try {
       const code = err.response.data.extras.result_codes
-      return code.operations 
-        ? code.operations.join(', ') 
-        : code.transaction 
+      return code.operations
+        ? code.operations.join(', ')
+        : code.transaction
           ? code.transaction.toString()
           : err
     }
@@ -23,7 +23,7 @@ module.exports = (server) => {
   }
 
   const safeMemoText = (text = '') => {
-    return (!text || text.length <= 28) 
+    return (!text || text.length <= 28)
       ? StellarSdk.Memo.text(text || '')
       : StellarSdk.Memo.text(text.substring(0, 28))
   }
@@ -100,7 +100,7 @@ module.exports = (server) => {
       })
       .then((result) => {
         if (!result) {
-          console.log('Already trusted')  
+          console.log('Already trusted')
         } else {
           console.log(`Success! Results (changeTrust): ${result._links.transaction.href}`)
         }

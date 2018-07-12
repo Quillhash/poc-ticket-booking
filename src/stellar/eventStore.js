@@ -25,7 +25,7 @@ const eventStoreFactory = (eventRepository) => {
   const getAllEvents = async () => {
     const eventsPromises = await eventRepository.keys()
       .then(keys => keys.map(async k => await eventRepository.get(k)))
-    
+
     return await Promise.all(eventsPromises)
   }
 

@@ -39,8 +39,8 @@ const ticketingFactory = (stellarServer, masterAccount, masterAsset) => {
       })
 
     const burntBalance = await stellarServer.queryOperations(user, 100, 'desc')
-      .then(operations => 
-        operations.filter(operation => 
+      .then(operations =>
+        operations.filter(operation =>
           operation.type === 'payment'
           && operation.to === event.issuer.publicKey()
           && operation.asset_code === event.asset.getCode()

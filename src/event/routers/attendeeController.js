@@ -17,8 +17,8 @@ module.exports = (stellar) => {
       res.status(200).send(response)
     })
   }
-  
-  const bookEvent = (req, res) => 
+
+  const bookEvent = (req, res) =>
   {
     const userId = req.body.userId
     const eventCode = req.body.eventCode
@@ -31,7 +31,7 @@ module.exports = (stellar) => {
         res.status(200).send(response)
       })
   }
-  
+
   const getBookedEvents = (req, res) => {
     const userId = req.body.userId
     stellar.getBookedEvents(userId).then(events => {

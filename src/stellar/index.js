@@ -33,13 +33,13 @@ module.exports = (config) => {
         eventCode: e.code,
         limit: e.limit,
       })))
-      .then(events => events.map(e => 
+      .then(events => events.map(e =>
         getRemainingTicket(e.eventCode)
           .then(remaining => {
             e.available = remaining
             return e
           })
-      )).then(events => 
+      )).then(events =>
         Promise.all(events)
       )
   }
@@ -81,7 +81,7 @@ module.exports = (config) => {
           e != null && (e.amount = t.balance)
           return e
         })))
-      
+
     const bookedTickets = (await Promise.all(bookedTicketsPromise))
       .filter(t => t != null).map(t => ({
         eventCode: t.code,
@@ -118,9 +118,9 @@ module.exports = (config) => {
       return 0
     }
     return ticketing.queryRemainingTickets(event)
-  } 
+  }
 
-  
+
 
   return {
     createEvent,
