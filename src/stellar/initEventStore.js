@@ -1,7 +1,7 @@
 module.exports = (config) => {
-  const { flatFileEventRepository } = require('./eventRepository')
+  const { firestoreEventRepository } = require('./eventRepository')
   const { eventStoreFactory } = require('./eventStore')
-  const eventRepository = flatFileEventRepository(config.EventDbPath)
+  const eventRepository = firestoreEventRepository(config.serviceAccountKey, 'events')
   const eventStore = eventStoreFactory(eventRepository)
 
   return eventStore
