@@ -1,5 +1,5 @@
 module.exports = (config) => {
-  const stellarWrapper = require('./initStellarWrapper')()
+  const stellarWrapper = require('./initStellarWrapper')(config)
   const userStore = require('./initUserStore')(config)
   const eventStore = require('./initEventStore')(config)
   const ticketingFactory = require('./ticketing')
@@ -73,7 +73,7 @@ module.exports = (config) => {
       .then(ticktes => ticktes.map(t => eventStore.get(t.eventCode)
         .then(e => {
           let ne
-          e != null && (ne = e.toJSON()) && (ne.amount = t.balance)
+          e != null && (ne = e.toJSON()) && (ne.amount = parseInt(t.balance))
           return ne
         })))
 

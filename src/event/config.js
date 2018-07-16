@@ -1,10 +1,12 @@
 const StellarSdk = require('stellar-sdk')
 const path = require('path')
 
-const masterAssetCode = process.env.MEDIUM_ASSET_CODE
-const masterIssuerKey = StellarSdk.Keypair.fromSecret(process.env.MEDIUM_ASSET_ISSUER)
-const masterDistributorKey = StellarSdk.Keypair.fromSecret(process.env.MEDIUM_ASSET_DISTRIBUTOR)
+const masterAssetCode = process.env.MASTER_ASSET_CODE
+const masterIssuerKey = StellarSdk.Keypair.fromSecret(process.env.MASTER_ASSET_ISSUER)
+const masterDistributorKey = StellarSdk.Keypair.fromSecret(process.env.MASTER_ASSET_DISTRIBUTOR)
 const masterAsset = new StellarSdk.Asset(masterAssetCode, masterIssuerKey.publicKey())
+const stellarUrl = process.env.STELLAR_URL || 'https://horizon-testnet.stellar.org'
+const stellarNetwork = process.env.STELLAR_NETWORK || 'test'
 
 const serviceAccountKey = require(path.join(process.cwd(), 'serviceAccountKey.json'))
 const firebase = require('firebase-admin')
@@ -20,5 +22,7 @@ module.exports = {
   masterAsset,
   UserDbPath: process.env.USERDB_PATH || 'user.db',
   EventDbPath: process.env.EVENTDB_PATH || 'event.db',
-  firebase
+  firebase,
+  stellarUrl,
+  stellarNetwork
 }
