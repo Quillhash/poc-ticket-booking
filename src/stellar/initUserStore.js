@@ -1,7 +1,7 @@
 module.exports = (config) => {
-  const { flatFileUserRepository } = require('./userRepository')
+  const { firestoreUserRepository } = require('./userRepository')
   const { userStoreFactory } = require('./userStore')
-  const userRepository = flatFileUserRepository(config.UserDbPath)
+  const userRepository = firestoreUserRepository(config.firebase)
   const userStore = userStoreFactory(userRepository)
 
   return userStore

@@ -7,6 +7,11 @@ const masterDistributorKey = StellarSdk.Keypair.fromSecret(process.env.MEDIUM_AS
 const masterAsset = new StellarSdk.Asset(masterAssetCode, masterIssuerKey.publicKey())
 
 const serviceAccountKey = require(path.join(process.cwd(), 'serviceAccountKey.json'))
+const firebase = require('firebase-admin')
+firebase.initializeApp({
+  credential: firebase.credential.cert(serviceAccountKey)
+})
+
 
 module.exports = {
   port: parseInt(process.env.PORT) || 3000,
@@ -15,5 +20,5 @@ module.exports = {
   masterAsset,
   UserDbPath: process.env.USERDB_PATH || 'user.db',
   EventDbPath: process.env.EVENTDB_PATH || 'event.db',
-  serviceAccountKey
+  firebase
 }

@@ -4,5 +4,5 @@ const { firestoreRepository } = require('./firestoreRepository')
 
 module.exports = {
   flatFileEventRepository: flatFileRepository,
-  firestoreEventRepository: (serviceAccountKey, collectionName) => firestoreRepository(serviceAccountKey, collectionName)
+  firestoreEventRepository: (serviceAccountKey, collectionName = 'events') => firestoreRepository(serviceAccountKey, collectionName)
 }

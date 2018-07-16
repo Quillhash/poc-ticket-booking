@@ -1,9 +1,4 @@
-const firestoreRepository = (serviceAccountKey, collectionName) => {
-
-  const firebase = require('firebase-admin')
-  firebase.initializeApp({
-    credential: firebase.credential.cert(serviceAccountKey)
-  })
+const firestoreRepository = (firebase, collectionName) => {
   const db = firebase.firestore()
   const collection = db.collection(collectionName)
 
