@@ -179,7 +179,7 @@ module.exports = (server) => {
 
   const eventCreator = (masterAccount, masterAsset) => async (eventCode, limit) => {
     const issuerAccount = await createChildAccount(masterAccount, 10)
-    const distributorAccount = await createChildAccount(masterAccount, 50)
+    const distributorAccount = await createChildAccount(masterAccount, 10)
     await changeTrust(distributorAccount, masterAsset, limit)
     await issueAsset(eventCode, issuerAccount, distributorAccount, limit)
 

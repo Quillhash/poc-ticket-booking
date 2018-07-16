@@ -18,7 +18,7 @@ module.exports = (stellar) => {
         res.status(200).send(response)
       })
       .catch(err => {
-        res.status(501).err(err)
+        res.send(err, 501)
       })
   }
 

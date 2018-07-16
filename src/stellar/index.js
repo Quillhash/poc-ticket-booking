@@ -14,13 +14,7 @@ module.exports = (config) => {
   userStore.setUserCreator(stellarWrapper.userCreator( masterAsset))
 
   const createEvent = (event) => {
-    const eventCode = event.code
-    const limit = event.limit
-    return eventStore.getOrCreate(eventCode, limit)
-      .then(e => ({
-        eventCode: e.code,
-        limit: e.limit,
-      }))
+    return eventStore.getOrCreate(event)
       .then(e => {
         console.log(e)
         return e
@@ -29,12 +23,12 @@ module.exports = (config) => {
 
   const getAllEvents = async () => {
     return eventStore.getAllEvents()
-      .then(events => events.map(e => ({
-        eventCode: e.code,
-        limit: e.limit,
-      })))
+      // .then(events => events.map(e => ({
+      //   code: e.code,
+      //   limit: e.limit,
+      // })))
       .then(events => events.map(e =>
-        getRemainingTicket(e.eventCode)
+        getRemainingTicket(e.code)
           .then(remaining => {
             e.available = remaining
             return e
@@ -78,15 +72,17 @@ module.exports = (config) => {
     const bookedTicketsPromise = await ticketing.queryBookedTickets(user.keypair)
       .then(ticktes => ticktes.map(t => eventStore.get(t.eventCode)
         .then(e => {
-          e != null && (e.amount = t.balance)
-          return e
+          let ne
+          e != null && (ne = e.toJSON()) && (ne.amount = t.balance)
+          return ne
         })))
 
     const bookedTickets = (await Promise.all(bookedTicketsPromise))
-      .filter(t => t != null).map(t => ({
-        eventCode: t.code,
-        amount: t.amount
-      }))
+      .filter(t => t != null)
+      // .map(t => ({
+      //   code: t.code,
+      //   amount: t.amount
+      // }))
 
     return bookedTickets
   }

@@ -1,5 +1,5 @@
 const { flatFileRepository } = require('./flatFileRepository')
 
-module.exports = { 
+module.exports = {
   flatFileEventRepository: flatFileRepository
 }

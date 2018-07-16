@@ -8,17 +8,18 @@ const eventStoreFactory = (eventRepository) => {
     stellarEventCreator = eventCreator
   }
 
-  const getOrCreate = async (eventCode, limit = 1000) => {
-    let event = await eventRepository.get(eventCode)
-    if (event) {
-      return Event.fromJSON(event)
+  const getOrCreate = async (event) => {
+    const createdEvent  = await eventRepository.get(event.code)
+    if (createdEvent) {
+      return Event.fromJSON(createdEvent)
     }
 
-    return stellarEventCreator(eventCode, limit)
+    return stellarEventCreator(event.code, event.limit)
       .then(stellarEvent => {
         console.log(`new event created: ${stellarEvent.code}`)
-        eventRepository.put(eventCode, stellarEvent)
-        return Event.fromJSON(stellarEvent)
+        let newEvent = Object.assign({}, stellarEvent, event)
+        eventRepository.put(event.code, newEvent)
+        return Event.fromJSON(newEvent)
       })
   }
 
