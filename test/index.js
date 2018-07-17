@@ -1,5 +1,7 @@
 const request = require('request-promise-native')
 
+// TODO: setup new master asset
+
 const doRequest = (apiPath, payload) => {
   const rootPath = 'http://localhost:3000'
   const options = {

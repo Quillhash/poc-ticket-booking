@@ -192,9 +192,9 @@ module.exports = (server) => {
   }
 
   const userCreator = (masterAsset) => async () => {
-    return createChildAccount(masterSigner, 5) // TODO: make funding configurable
+    return createChildAccount(masterSigner, 5)
       .then(userKey => {
-        return changeTrust(userKey, masterAsset, 100) // FIXME: remove hardcoded limit
+        return changeTrust(userKey, masterAsset)
           .then(() => userKey)
       })
       .then(userKey => {

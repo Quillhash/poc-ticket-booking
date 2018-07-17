@@ -1,6 +1,6 @@
 const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
   const bookTicket = async (user, event, amount = 1) => {
-    await stellarWrapper.changeTrust(user, event.asset, 100) // TODO: remove hard code trust limit
+    await stellarWrapper.changeTrust(user, event.asset)
       .then(() => console.log('change trust: completed'))
     // transfer masterAsset to user
     await stellarWrapper.transfer(masterAccount, user.publicKey(), amount, masterAsset)
@@ -13,10 +13,6 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
     // user bid the eventAsset
     await stellarWrapper.makeOffer(user, masterAsset, event.asset, amount, amount)
       .then(() => console.log('user bid the eventAsset'))
-
-    // TODO: remove random number
-    // return tracking id if success
-    return Math.random()
   }
 
   const queryRemainingTickets = (event) => {

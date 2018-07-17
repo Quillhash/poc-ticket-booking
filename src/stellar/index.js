@@ -23,10 +23,6 @@ module.exports = (config) => {
 
   const getAllEvents = async () => {
     return eventStore.getAllEvents()
-      // .then(events => events.map(e => ({
-      //   code: e.code,
-      //   limit: e.limit,
-      // })))
       .then(events => events.map(e =>
         getRemainingTicket(e.code)
           .then(remaining => {
@@ -79,10 +75,6 @@ module.exports = (config) => {
 
     const bookedTickets = (await Promise.all(bookedTicketsPromise))
       .filter(t => t != null)
-      // .map(t => ({
-      //   code: t.code,
-      //   amount: t.amount
-      // }))
 
     return bookedTickets
   }
