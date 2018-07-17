@@ -12,11 +12,16 @@ module.exports = (config) => new Promise((resolve, reject) => {
   app.use(bodyParser.urlencoded({ extended: true }))
   app.use(responseTime())
 
-  app.listen(config.port, (err) => {
+
+
+  let server = app.listen(config.port, (err) => {
     if (err) {
       reject(err)
     } else {
       console.log('app running on port.', config.port)
+      app.stop = () => {
+        server.close()
+      }
       resolve(app)
     }
   })

@@ -20,7 +20,7 @@
     "firebase-admin": "^5.12.1",
     "flat-file-db": "^1.0.0",
     "request": "^2.87.0",
-    "request-promise": "^4.2.2",
+    "request-promise-native": "^1.0.5",
     "response-time": "^2.3.2",
     "stellar-sdk": "^0.9.1"
   },

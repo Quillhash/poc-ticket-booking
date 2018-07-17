@@ -20,8 +20,6 @@ module.exports = {
   masterIssuerKey,
   masterDistributorKey,
   masterAsset,
-  UserDbPath: process.env.USERDB_PATH || 'user.db',
-  EventDbPath: process.env.EVENTDB_PATH || 'event.db',
   firebase,
   stellarUrl,
   stellarNetwork
