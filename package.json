@@ -4,6 +4,7 @@
   "description": "",
   "main": "stellar/playground.js",
   "scripts": {
+    "pump": "node tools/pump",
     "test": "mocha test/.",
     "test:watch": "nodemon -x 'mocha test/.'",
     "loop": "nodemon src/event/index.js"
