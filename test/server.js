@@ -1,7 +1,11 @@
 require('dotenv/config')
 const config = require('../src/event/config')
 
-module.exports = () => {
+module.exports = (masterAsset) => {
+  config.masterIssuerKey = masterAsset.masterIssuerKey
+  config.masterDistributorKey = masterAsset.masterDistributorKey
+  config.masterAsset = masterAsset.asset
+
   const server = require('../src/event/server')(config)
 
   return {

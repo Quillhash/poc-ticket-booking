@@ -1,5 +1,8 @@
 const request = require('request-promise-native')
 
+const {create} = require('./utils/masterAsset')
+const randomId = require('./utils/randomId')
+
 // TODO: setup new master asset
 
 const doRequest = (apiPath, payload) => {
@@ -19,10 +22,17 @@ const printResult = (result) => {
 }
 
 describe('Ticketing E2E', () => {
-  let server
+  let server, masterAsset
+  const userId = `t_${randomId(4)}`
+  const masterAssetCode = 'TTTT'
+  const eventCode = `E${randomId(3)}`
+  const nonExistingEventCode = `N${randomId(3)}`
+
   before(async () => {
-    server = require('./server')()
+    masterAsset = await create(masterAssetCode, 100000000)
+    server = require('./server')(masterAsset)
     await server.start()
+
     console.log('before test')
   })
 
@@ -34,7 +44,7 @@ describe('Ticketing E2E', () => {
 
   it('Organizer creates Event', async () => {
     const payload = {
-      'code': 'AAA',
+      'code': eventCode,
       'startDate': '2018-07-11T18:06:59.713Z',
       'endDate': '2018-07-11T18:06:59.713Z',
       'title': 'event title',
@@ -60,23 +70,23 @@ describe('Ticketing E2E', () => {
 
   it('Attendee book Event', async () => {
     const payload = {
-      'userId': 'superman',
-      'eventCode': 'CCC'
+      userId,
+      eventCode
     }
     await doRequest('api/attendee/event/book', payload).then(printResult)
   })
 
   it('Attendee book non existing event', async () => {
     const payload = {
-      'userId': 'superman',
-      'eventCode': 'GGG'
+      userId,
+      'eventCode': nonExistingEventCode
     }
     await doRequest('api/attendee/event/book', payload).then(printResult)
   })
 
   it('Attendee book full event', async () => {
     const payload = {
-      'userId': 'superman',
+      userId,
       'eventCode': 'CCD'
     }
     await doRequest('api/attendee/event/book', payload).then(printResult)
@@ -84,7 +94,7 @@ describe('Ticketing E2E', () => {
 
   it('Attendee list booked', async () => {
     const payload = {
-      'userId': 'superman'
+      userId,
     }
     await doRequest('api/attendee/event/booked', payload).then(printResult)
   })

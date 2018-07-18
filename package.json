@@ -5,9 +5,9 @@
   "main": "stellar/playground.js",
   "scripts": {
     "pump": "node tools/pump",
-    "test": "mocha test/.",
-    "test:watch": "nodemon -x 'mocha test/.'",
-    "loop": "nodemon src/event/index.js"
+    "test": "mocha --recursive './test/**/*.spec.js'",
+    "test:watch": "nodemon -x 'npm run test.'",
+    "server": "nodemon src/event/index.js"
   },
   "keywords": [],
   "author": "",
