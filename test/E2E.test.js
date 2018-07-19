@@ -20,6 +20,10 @@ const printResult = (result) => {
   console.log(JSON.stringify(result, null, 2))
 }
 
+const printError = (error) => {
+  console.error(error.message)
+}
+
 describe('Ticketing E2E', () => {
   let server, masterAsset
   const userId = `t_${randomId(4)}`
@@ -37,10 +41,10 @@ describe('Ticketing E2E', () => {
   })
 
   after(() => {
+    console.log('after test')
     server && server.stop()
-    console.log('before each test')
-  })
 
+  })
 
   it('Organizer creates Event', async () => {
     const payload = {
@@ -53,44 +57,57 @@ describe('Ticketing E2E', () => {
       'venue': 'One Building',
       'host': 'One Group',
       'uuid': 'user unique id',
-      'limit': 50
+      'limit': 2
     }
 
     await doRequest('api/organizer/event/create', payload).then(printResult)
   })
 
-  // it('Organizer list Event', async () => {
-  //   await doRequest('api/organizer/event/list', {})
-  //     .then(printResult)
-  // })
+  it('Organizer list Event', async () => {
+    await doRequest('api/organizer/event/list', {})
+      .then(printResult)
+  })
 
-  // it('Attendee list Event', async () => {
-  //   await doRequest('api/attendee/event/list', {}).then(printResult)
-  // })
+  it('Attendee list Event', async () => {
+    await doRequest('api/attendee/event/list', {})
+      .then(printResult)
+  })
 
   it('Attendee book Event', async () => {
     const payload = {
       userId,
       eventCode
     }
-    await doRequest('api/attendee/event/book', payload).then(printResult)
+    await doRequest('api/attendee/event/book', payload)
+      .then(printResult)
   })
 
-  // it('Attendee book non existing event', async () => {
-  //   const payload = {
-  //     userId,
-  //     'eventCode': nonExistingEventCode
-  //   }
-  //   await doRequest('api/attendee/event/book', payload).then(printResult)
-  // })
+  it('Attendee book non existing event', async () => {
+    const payload = {
+      userId,
+      'eventCode': nonExistingEventCode
+    }
+    await doRequest('api/attendee/event/book', payload)
+      .catch(printError).then(printResult)
+  })
 
-  // it('Attendee book full event', async () => {
-  //   const payload = {
-  //     userId,
-  //     'eventCode': 'CCD'
-  //   }
-  //   await doRequest('api/attendee/event/book', payload).then(printResult)
-  // })
+  it('Attendee book full event', async () => {
+    const payload = {
+      userId,
+      'eventCode': eventCode
+    }
+    await doRequest('api/attendee/event/book', payload).then(printResult)
+    await doRequest('api/attendee/event/book', payload)
+      .catch(printError).then(printResult)
+
+  })
+
+  it('Attendee list booked', async () => {
+    const payload = {
+      userId,
+    }
+    await doRequest('api/attendee/event/booked', payload).then(printResult)
+  })
 
   it('Attendee cancel ticket', async () => {
     const payload = {
@@ -100,22 +117,6 @@ describe('Ticketing E2E', () => {
     await doRequest('api/attendee/event/cancel', payload).then(printResult)
   })
 
-  it('Attendee book Event', async () => {
-    const payload = {
-      userId,
-      eventCode
-    }
-    await doRequest('api/attendee/event/book', payload).then(printResult)
-  })
-
-  it('Attendee book Event', async () => {
-    const payload = {
-      userId,
-      eventCode
-    }
-    await doRequest('api/attendee/event/book', payload).then(printResult)
-  })
-
   it('Attendee use ticket', async () => {
     const payload = {
       userId,
@@ -123,11 +124,4 @@ describe('Ticketing E2E', () => {
     }
     await doRequest('api/attendee/event/useticket', payload).then(printResult)
   })
-
-  // it('Attendee list booked', async () => {
-  //   const payload = {
-  //     userId,
-  //   }
-  //   await doRequest('api/attendee/event/booked', payload).then(printResult)
-  // })
 })

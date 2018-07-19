@@ -66,7 +66,7 @@ module.exports = (server) => {
       })
       .then((result) => {
         // console.log(`Success! Results (createChildAccount): ${result._links.transaction.href}`)
-        return result
+        return result.hash
       })
       .then(() => childKey)
       .catch((error) => {
@@ -141,7 +141,7 @@ module.exports = (server) => {
       })
       .then((result) => {
         // console.log(`Success! Results (transfer): ${result._links.transaction.href}`)
-        return true
+        return result.hash
       })
       .catch((error) => {
         const errMsg = `Something went wrong! (transfer): ${getErrorCode(error)}`
@@ -168,7 +168,7 @@ module.exports = (server) => {
       })
       .then((result) => {
         // console.log(`Success! Results (makeOffer): ${result._links.transaction.href}`)
-        return true
+        return result.hash
       })
       .catch((error) => {
         const errMsg = `Something went wrong! (makeOffer): ${getErrorCode(error)}`
@@ -177,12 +177,120 @@ module.exports = (server) => {
       })
   }
 
-  const eventCreator = (masterAccount, masterAsset) => async (eventCode, limit) => {
-    const issuerAccount = await createChildAccount(masterAccount, 10)
-    const distributorAccount = await createChildAccount(masterAccount, 10)
-    await changeTrust(distributorAccount, masterAsset, limit)
-    await issueAsset(eventCode, issuerAccount, distributorAccount, limit)
+  const swap = (srcKey, sellingAsset, buyer, buyingAsset, sellingAmount, buyingPrice) => {
+    return server.loadAccount(srcKey.publicKey())
+      .then(account => {
+        const transaction = new StellarSdk.TransactionBuilder(account)
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: sellingAsset,
+            buying: buyingAsset,
+            amount: `${sellingAmount}`,
+            price: buyingPrice,
+            source: srcKey.publicKey()
+          }))
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: buyingAsset,
+            buying: sellingAsset,
+            amount: `${buyingPrice}`,
+            price: sellingAmount,
+            source: buyer.publicKey()
+          }))
+          .addMemo(safeMemoText(`swap ${sellingAsset.getCode()} -> ${buyingAsset.getCode()}`))
+          .build()
+        transaction.sign(masterSigner || srcKey)
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        return result.hash
+      })
+      .catch((error) => {
+        const errMsg = `Something went wrong! (swap): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
+      })
+  }
 
+  const doIssueAsset = (masterAsset, eventCode, issuerAccount, distributorAccount, limit) => {
+    var asset = new StellarSdk.Asset(eventCode, issuerAccount.publicKey())
+    return server.loadAccount(issuerAccount.publicKey())
+      .then((account) => {
+        let changeTrustMasterOpt = { asset: masterAsset, source: distributorAccount.publicKey() }
+        let changeTrustOpt = { asset: asset, source: distributorAccount.publicKey() }
+        limit != null && !isNaN(limit) && (changeTrustMasterOpt.limit = `${limit}`, changeTrustOpt.limit = `${limit}`)
+
+        const transaction = new StellarSdk.TransactionBuilder(account)
+          .addOperation(StellarSdk.Operation.changeTrust(changeTrustMasterOpt))
+          .addOperation(StellarSdk.Operation.changeTrust(changeTrustOpt))
+          .addOperation(StellarSdk.Operation.payment({
+            destination: distributorAccount.publicKey(),
+            asset: asset,
+            amount: `${limit}`
+          }))
+          .addMemo(safeMemoText(`IssueAsset: ${eventCode}`))
+          .build()
+        transaction.sign(masterSigner || issuerAccount)
+
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        return result.hash
+      })
+      .catch((error) => {
+        const errMsg = `Something went wrong! (doIssueAsset): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
+      })
+  }
+
+  const doBookTicket = (masterAccount, masterAsset, user, event, amount) => {
+    return server.loadAccount(masterAccount.publicKey())
+      .then(account => {
+        const transaction = new StellarSdk.TransactionBuilder(account)
+          .addOperation(StellarSdk.Operation.changeTrust({
+            asset: event.asset,
+            source: user.publicKey()
+          }))
+          .addOperation(StellarSdk.Operation.payment({
+            destination: user.publicKey(),
+            asset: masterAsset,
+            amount: `${amount}`
+          }))
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: event.asset,
+            buying: masterAsset,
+            amount: `${amount}`,
+            price: amount,
+            source: event.distributor.publicKey()
+          }))
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: masterAsset,
+            buying: event.asset,
+            amount: `${amount}`,
+            price: amount,
+            source: user.publicKey()
+          }))
+          .addMemo(safeMemoText(`book:${event.asset.getCode()}`))
+          .build()
+
+        transaction.sign(masterSigner)
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        return result.hash
+      })
+      .catch((error) => {
+        const errMsg = `Something went wrong! (doBookTicket): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
+      })
+  }
+
+  const eventCreator = (masterAccount, masterAsset) => async (eventCode, limit) => {
+    const issuerAccount = await createChildAccount(masterAccount, 5)
+    const distributorAccount = await createChildAccount(masterAccount, 5)
+    // await changeTrust(distributorAccount, masterAsset, limit)
+    // await issueAsset(eventCode, issuerAccount, distributorAccount, limit)
+    await doIssueAsset(masterAsset, eventCode, issuerAccount, distributorAccount, limit)
     return {
       code: eventCode,
       limit: limit,
@@ -252,6 +360,8 @@ module.exports = (server) => {
     queryAllTrades,
     queryBalance,
     queryOperations,
-    queryAllAsstes
+    queryAllAsstes,
+    swap,
+    doBookTicket
   }
 }

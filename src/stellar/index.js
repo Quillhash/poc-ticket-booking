@@ -37,13 +37,25 @@ module.exports = (config) => {
   const bookEvent = async (userId, eventCode) => {
     const event = await eventStore.get(eventCode)
     if (!event) {
-      return false
+      return Promise.reject(new Error('EVENT_NOTFOUND'))
+    }
+
+    const remaining = await getRemainingTicket(eventCode)
+
+    if (remaining <= 0) {
+      return Promise.reject(new Error('EVENT_FULL'))
     }
 
     return await userStore.getOrCreate(userId)
       .then(user => ticketing.bookTicket(user.keypair, event)
-        .then(() => ticketing.queryTicketCount(user.keypair, event)))
-      .catch(() => -1)
+        .then(async hash => ({
+          tx: hash,
+          count: await ticketing.queryTicketCount(user.keypair, event)
+        })))
+      .catch(err => {
+        console.error(err)
+        return Promise.reject(new Error('BOOK_ERROR'))
+      })
   }
 
   const getBookedCount = async (userId, eventCode) => {
@@ -83,40 +95,49 @@ module.exports = (config) => {
     const user = await userStore.get(userId)
 
     if (!user) {
-      return false
+      return Promise.reject(new Error('USER_NOTFOUND'))
     }
 
     const event = await eventStore.get(eventCode)
     if (!event) {
-      return false
+      return Promise.reject(new Error('EVENT_NOTFOUND'))
     }
 
     return ticketing.burnTicket(user.keypair, event, amount)
-      .then(() => ticketing.queryTicketCount(user.keypair, event))
-      .catch(() => -1)
+      .then(async hash => ({
+        ts: hash,
+        count: await ticketing.queryTicketCount(user.keypair, event)
+      }))
+      .catch(() => {
+        return Promise.reject(new Error('BURN_ERROR'))
+      })
   }
 
   const cancelBooking = async (userId, eventCode) => {
     const user = await userStore.get(userId)
     if (!user) {
-      return false
+      return Promise.reject(new Error('USER_NOTFOUND'))
     }
 
     const event = await eventStore.get(eventCode)
     if (!event) {
-      return false
+      return Promise.reject(new Error('EVENT_NOTFOUND'))
     }
 
     return ticketing.queryTicketCount(user.keypair, event).then(count => {
       if (count <= 0) {
-        return false
+        return Promise.reject(new Error('USER_NO_TICKET'))
       }
 
       return ticketing.cancelBooking(user.keypair, event)
-        .then(() =>
-          ticketing.queryTicketCount(user.keypair, event)
-        )
-        .catch(() => -1)
+        .then(async hash => ({
+          tx: hash,
+          count: await ticketing.queryTicketCount(user.keypair, event)
+        }))
+        .catch(err => {
+          console.err(err)
+          return Promise.reject(new Error('CANCEL_ERROR'))
+        })
     })
   }
 

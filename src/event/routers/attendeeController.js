@@ -17,18 +17,12 @@ module.exports = (stellar) => {
     })
   }
 
-  const bookEvent = (req, res) =>
-  {
+  const bookEvent = (req, res) => {
     const userId = req.body.userId
     const eventCode = req.body.eventCode
     return stellar.bookEvent(userId, eventCode)
-      .then(result => !result ? 0 : stellar.getBookedCount(userId, eventCode))
-      .then(count => {
-        const response = {
-          count
-        }
-        res.status(200).send(response)
-      })
+      .then(response => res.status(200).send(response))
+      .catch(err => res.status(400).send(err.message))
   }
 
   const getBookedEvents = (req, res) => {
@@ -44,23 +38,17 @@ module.exports = (stellar) => {
   const cancelBooking = (req, res) => {
     const userId = req.body.userId
     const eventCode = req.body.eventCode
-    return stellar.cancelBooking(userId, eventCode).then(remaining => {
-      const response = {
-        remaining
-      }
-      res.status(200).send(response)
-    })
+    return stellar.cancelBooking(userId, eventCode)
+      .then(response => res.status(200).send(response))
+      .catch(err => res.status(400).send(err.message))
   }
 
   const useTicket = (req, res) => {
     const userId = req.body.userId
     const eventCode = req.body.eventCode
-    return stellar.useTicket(userId, eventCode).then(remaining => {
-      const response = {
-        remaining
-      }
-      res.status(200).send(response)
-    })
+    return stellar.useTicket(userId, eventCode)
+      .then(response => res.status(200).send(response))
+      .catch(err => res.status(400).send(err.message))
   }
 
   router.use('/event/list', getAllEvents)

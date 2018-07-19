@@ -1,18 +1,27 @@
 const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
   const bookTicket = async (user, event, amount = 1) => {
-    await stellarWrapper.changeTrust(user, event.asset)
-      .then(() => console.log('change trust: completed'))
-    // transfer masterAsset to user
-    await stellarWrapper.transfer(masterAccount, user.publicKey(), amount, masterAsset)
-      .then(() => console.log('transfer masterAsset to user: completed'))
+    return stellarWrapper.doBookTicket(masterAccount, masterAsset, user, event, amount)
+    // await stellarWrapper.changeTrust(user, event.asset)
+    //   .then(() => console.log('change trust: completed'))
 
-    // offer eventAsset
-    await stellarWrapper.makeOffer(event.distributor, event.asset, masterAsset, amount, amount)
-      .then(() => console.log('offer eventAsset'))
+    // // transfer masterAsset to user
+    // await stellarWrapper.transfer(masterAccount, user.publicKey(), amount, masterAsset)
+    //   .then(() => console.log('transfer masterAsset to user: completed'))
 
-    // user bid the eventAsset
-    await stellarWrapper.makeOffer(user, masterAsset, event.asset, amount, amount)
-      .then(() => console.log('user bid the eventAsset'))
+    // // swap asset
+    // return await stellarWrapper.swap(event.distributor, event.asset, user, masterAsset, amount, amount)
+    //   .then(hash => {
+    //     console.log(`swap asset ${hash}`)
+    //     return hash
+    //   })
+  }
+
+  const cancelBooking = async (user, event, amount = 1) => {
+    return await stellarWrapper.swap(user, event.asset, event.distributor, masterAsset, amount, amount)
+    // .then(hash => {
+    //   console.log(`swap asset ${hash}`)
+    //   return hash
+    // })
   }
 
   const queryRemainingTickets = (event) => {
@@ -67,7 +76,6 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
 
   const burnTicket = (user, event, amount = 1) => {
     return stellarWrapper.transfer(user, event.issuer.publicKey(), amount, event.asset)
-      .then(() => console.log('burn token asset to issuer: completed'))
   }
 
   const queryBookedTickets = (user) => {
@@ -77,16 +85,6 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
           eventCode: a.asset_code,
           balance: a.balance
         })))
-  }
-
-  const cancelBooking = async (user, event, amount = 1) => {
-    // offer eventAsset
-    await stellarWrapper.makeOffer(user, event.asset, masterAsset, amount, amount)
-      .then(() => console.log('offer eventAsset'))
-
-    // user bid the eventAsset
-    await stellarWrapper.makeOffer(event.distributor, masterAsset, event.asset, amount, amount)
-      .then(() => console.log('event bid the eventAsset'))
   }
 
   return {
