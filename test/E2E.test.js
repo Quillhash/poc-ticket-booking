@@ -30,11 +30,10 @@ describe('Ticketing E2E', () => {
   const nonExistingEventCode = `NE2E${randomId(3)}`
 
   before(async () => {
+    console.log('before test')
     masterAsset = await create(masterAssetCode, 100000000, Keypair.fromSecret(masterIssuerSecret), Keypair.fromSecret(masterDistributorSecret))
     server = require('./server')(masterAsset)
     await server.start()
-
-    console.log('before test')
   })
 
   after(() => {
@@ -60,13 +59,45 @@ describe('Ticketing E2E', () => {
     await doRequest('api/organizer/event/create', payload).then(printResult)
   })
 
-  it('Organizer list Event', async () => {
-    await doRequest('api/organizer/event/list', {})
-      .then(printResult)
+  // it('Organizer list Event', async () => {
+  //   await doRequest('api/organizer/event/list', {})
+  //     .then(printResult)
+  // })
+
+  // it('Attendee list Event', async () => {
+  //   await doRequest('api/attendee/event/list', {}).then(printResult)
+  // })
+
+  it('Attendee book Event', async () => {
+    const payload = {
+      userId,
+      eventCode
+    }
+    await doRequest('api/attendee/event/book', payload).then(printResult)
   })
 
-  it('Attendee list Event', async () => {
-    await doRequest('api/attendee/event/list', {}).then(printResult)
+  // it('Attendee book non existing event', async () => {
+  //   const payload = {
+  //     userId,
+  //     'eventCode': nonExistingEventCode
+  //   }
+  //   await doRequest('api/attendee/event/book', payload).then(printResult)
+  // })
+
+  // it('Attendee book full event', async () => {
+  //   const payload = {
+  //     userId,
+  //     'eventCode': 'CCD'
+  //   }
+  //   await doRequest('api/attendee/event/book', payload).then(printResult)
+  // })
+
+  it('Attendee cancel ticket', async () => {
+    const payload = {
+      userId,
+      eventCode
+    }
+    await doRequest('api/attendee/event/cancel', payload).then(printResult)
   })
 
   it('Attendee book Event', async () => {
@@ -77,26 +108,26 @@ describe('Ticketing E2E', () => {
     await doRequest('api/attendee/event/book', payload).then(printResult)
   })
 
-  it('Attendee book non existing event', async () => {
+  it('Attendee book Event', async () => {
     const payload = {
       userId,
-      'eventCode': nonExistingEventCode
+      eventCode
     }
     await doRequest('api/attendee/event/book', payload).then(printResult)
   })
 
-  it('Attendee book full event', async () => {
+  it('Attendee use ticket', async () => {
     const payload = {
       userId,
-      'eventCode': 'CCD'
+      eventCode
     }
-    await doRequest('api/attendee/event/book', payload).then(printResult)
+    await doRequest('api/attendee/event/useticket', payload).then(printResult)
   })
 
-  it('Attendee list booked', async () => {
-    const payload = {
-      userId,
-    }
-    await doRequest('api/attendee/event/booked', payload).then(printResult)
-  })
+  // it('Attendee list booked', async () => {
+  //   const payload = {
+  //     userId,
+  //   }
+  //   await doRequest('api/attendee/event/booked', payload).then(printResult)
+  // })
 })

@@ -65,7 +65,7 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results (createChildAccount): ${result._links.transaction.href}`)
+        // console.log(`Success! Results (createChildAccount): ${result._links.transaction.href}`)
         return result
       })
       .then(() => childKey)
@@ -102,7 +102,7 @@ module.exports = (server) => {
         if (!result) {
           console.log('Already trusted')
         } else {
-          console.log(`Success! Results (changeTrust): ${result._links.transaction.href}`)
+          // console.log(`Success! Results (changeTrust): ${result._links.transaction.href}`)
         }
         return true
       })
@@ -140,7 +140,7 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results (transfer): ${result._links.transaction.href}`)
+        // console.log(`Success! Results (transfer): ${result._links.transaction.href}`)
         return true
       })
       .catch((error) => {
@@ -167,7 +167,7 @@ module.exports = (server) => {
         return server.submitTransaction(transaction)
       })
       .then((result) => {
-        console.log(`Success! Results (makeOffer): ${result._links.transaction.href}`)
+        // console.log(`Success! Results (makeOffer): ${result._links.transaction.href}`)
         return true
       })
       .catch((error) => {

@@ -5,7 +5,8 @@
   "main": "stellar/playground.js",
   "scripts": {
     "pump": "node tools/pump",
-    "test": "ENVIRONMENT=E2E mocha --recursive --timeout 999999 './test/**/*.spec.js'",
+    "test": "ENVIRONMENT=E2E mocha --recursive --timeout 999999 './test/**/*.test.js'",
+    "test:prod": "ENVIRONMENT=PROD mocha --recursive --timeout 999999 './test/**/*.test.js'",
     "test:watch": "nodemon -x 'npm run test.'",
     "server": "nodemon src/event/index.js"
   },

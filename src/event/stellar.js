@@ -27,12 +27,17 @@ module.exports = (stellarEngine) => {
     return stellarEngine.cancelEvent(eventCode)
   }
 
+  const useTicket = (userId, eventCode) => {
+    return stellarEngine.useTicket(userId, eventCode)
+  }
+
   return {
     createEvent,
     getAllEvents,
     bookEvent,
     getBookedEvents,
     cancelBooking,
+    useTicket,
     cancelEvent,
     getBookedCount
   }

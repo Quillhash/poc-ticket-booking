@@ -11,7 +11,7 @@ module.exports = (config) => {
   const ticketing = ticketingFactory(stellarWrapper, masterAccount, masterAsset)
 
   eventStore.setEventCreator(stellarWrapper.eventCreator(masterAccount, masterAsset))
-  userStore.setUserCreator(stellarWrapper.userCreator( masterAsset))
+  userStore.setUserCreator(stellarWrapper.userCreator(masterAsset))
 
   const createEvent = (event) => {
     return eventStore.getOrCreate(event)
@@ -79,7 +79,7 @@ module.exports = (config) => {
     return bookedTickets
   }
 
-  const useTicket = async (userId, eventCode, amount = 1) =>  {
+  const useTicket = async (userId, eventCode, amount = 1) => {
     const user = await userStore.get(userId)
 
     if (!user) {
@@ -96,8 +96,28 @@ module.exports = (config) => {
       .catch(() => -1)
   }
 
-  const cancelBooking = async () => {
-    return true
+  const cancelBooking = async (userId, eventCode) => {
+    const user = await userStore.get(userId)
+    if (!user) {
+      return false
+    }
+
+    const event = await eventStore.get(eventCode)
+    if (!event) {
+      return false
+    }
+
+    return ticketing.queryTicketCount(user.keypair, event).then(count => {
+      if (count <= 0) {
+        return false
+      }
+
+      return ticketing.cancelBooking(user.keypair, event)
+        .then(() =>
+          ticketing.queryTicketCount(user.keypair, event)
+        )
+        .catch(() => -1)
+    })
   }
 
   const getRemainingTicket = async (eventCode) => {
@@ -107,8 +127,6 @@ module.exports = (config) => {
     }
     return ticketing.queryRemainingTickets(event)
   }
-
-
 
   return {
     createEvent,

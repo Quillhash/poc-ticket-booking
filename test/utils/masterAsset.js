@@ -61,23 +61,26 @@ const transfer = (srcKey, desPublicKey, amount, asset = Asset.native()) => {
 
 
 const create = async (assetCode, balance, issuerKey = Keypair.random(), distributorKey = Keypair.random()) => {
-  console.log(`issuing new asset: ${balance} ${assetCode}`)
   const masterIssuerKey = issuerKey
   const masterDistributorKey = distributorKey
+  const asset = new Asset(assetCode, masterIssuerKey.publicKey())
+  const isIssued = await hasAssetIssued(asset)
+  if (isIssued) {
+    return {
+      masterIssuerKey,
+      masterDistributorKey,
+      asset
+    }
+  }
 
+  console.log(`issuing new asset: ${balance} ${assetCode}`)
   console.log('    creating issuer/distributor account')
   await createAccount(masterIssuerKey.publicKey())
   await createAccount(masterDistributorKey.publicKey())
 
   console.log('    transfering asset to distributor')
-  var asset = new Asset(assetCode, masterIssuerKey.publicKey())
-  await hasAssetIssued(asset).then(async issued => {
-    if (issued)
-      return
-
-    await changeTrust(masterDistributorKey, asset)
-    await transfer(masterIssuerKey, masterDistributorKey.publicKey(), balance, asset)
-  })
+  await changeTrust(masterDistributorKey, asset)
+  await transfer(masterIssuerKey, masterDistributorKey.publicKey(), balance, asset)
 
   console.log('asset issued')
   return {

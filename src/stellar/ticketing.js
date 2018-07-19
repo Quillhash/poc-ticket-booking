@@ -79,12 +79,23 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
         })))
   }
 
+  const cancelBooking = async (user, event, amount = 1) => {
+    // offer eventAsset
+    await stellarWrapper.makeOffer(user, event.asset, masterAsset, amount, amount)
+      .then(() => console.log('offer eventAsset'))
+
+    // user bid the eventAsset
+    await stellarWrapper.makeOffer(event.distributor, masterAsset, event.asset, amount, amount)
+      .then(() => console.log('event bid the eventAsset'))
+  }
+
   return {
     bookTicket,
     queryRemainingTickets,
     queryTicketCount,
     burnTicket,
     queryBookedTickets,
+    cancelBooking
   }
 }
 

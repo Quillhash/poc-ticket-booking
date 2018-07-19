@@ -33,7 +33,7 @@ module.exports = (stellar) => {
 
   const getBookedEvents = (req, res) => {
     const userId = req.body.userId
-    stellar.getBookedEvents(userId).then(events => {
+    return stellar.getBookedEvents(userId).then(events => {
       const response = {
         events
       }
@@ -41,20 +41,33 @@ module.exports = (stellar) => {
     })
   }
 
-  // TODO: implement cancel booking
-  // const cancelBooking = (req, res) => {
-  //   const result = stellar.cancelBooking()
+  const cancelBooking = (req, res) => {
+    const userId = req.body.userId
+    const eventCode = req.body.eventCode
+    return stellar.cancelBooking(userId, eventCode).then(remaining => {
+      const response = {
+        remaining
+      }
+      res.status(200).send(response)
+    })
+  }
 
-  //   const response = {
-  //     result
-  //   }
-  //   res.status(200).send(response)
-  // }
+  const useTicket = (req, res) => {
+    const userId = req.body.userId
+    const eventCode = req.body.eventCode
+    return stellar.useTicket(userId, eventCode).then(remaining => {
+      const response = {
+        remaining
+      }
+      res.status(200).send(response)
+    })
+  }
 
   router.use('/event/list', getAllEvents)
   router.post('/event/book', bookEvent)
-  // router.post('/event/cancel', cancelBooking)
+  router.post('/event/cancel', cancelBooking)
   router.post('/event/booked', getBookedEvents)
+  router.post('/event/useticket', useTicket)
 
   return router
 }
