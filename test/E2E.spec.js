@@ -1,9 +1,8 @@
 const request = require('request-promise-native')
+const { Keypair } = require('stellar-sdk')
 
-const {create} = require('./utils/masterAsset')
+const { create } = require('./utils/masterAsset')
 const randomId = require('./utils/randomId')
-
-// TODO: setup new master asset
 
 const doRequest = (apiPath, payload) => {
   const rootPath = 'http://localhost:3000'
@@ -25,11 +24,13 @@ describe('Ticketing E2E', () => {
   let server, masterAsset
   const userId = `t_${randomId(4)}`
   const masterAssetCode = 'TTTT'
-  const eventCode = `E${randomId(3)}`
-  const nonExistingEventCode = `N${randomId(3)}`
+  const masterIssuerSecret = 'SBIQ3MNIPU2BTWSYHKAYHX2D3465LWRPD4DXPSVEGDFJAZGIQII6SGOY'
+  const masterDistributorSecret = 'SDWQCC4TKKCFUAWACSJHIZPADJG7MNCPT6OXGNTGRY5JHHQ7LWAWEA45'
+  const eventCode = `E2E${randomId(3)}`
+  const nonExistingEventCode = `NE2E${randomId(3)}`
 
   before(async () => {
-    masterAsset = await create(masterAssetCode, 100000000)
+    masterAsset = await create(masterAssetCode, 100000000, Keypair.fromSecret(masterIssuerSecret), Keypair.fromSecret(masterDistributorSecret))
     server = require('./server')(masterAsset)
     await server.start()
 

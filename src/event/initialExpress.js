@@ -12,8 +12,6 @@ module.exports = (config) => new Promise((resolve, reject) => {
   app.use(bodyParser.urlencoded({ extended: true }))
   app.use(responseTime())
 
-
-
   let server = app.listen(config.port, (err) => {
     if (err) {
       reject(err)

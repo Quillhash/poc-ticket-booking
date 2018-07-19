@@ -1,31 +1,28 @@
-const StellarSdk = require('stellar-sdk')
+const { Network, Server, Keypair, Operation, TransactionBuilder, Memo, Asset } = require('stellar-sdk')
 const stellarUrl = 'https://horizon-testnet.stellar.org'
-StellarSdk.Network.useTestNetwork()
+Network.useTestNetwork()
 
-const server = new StellarSdk.Server(stellarUrl)
+const server = new Server(stellarUrl)
 
-const targetUserPk = 'GBC6LGYGVPB2AI6UM3VZALSCLJHZQT5P5NEM3WUBCJBYND3EIYAQII63'
-const dummySeed = StellarSdk.Keypair.random()
+const targetUserPk = 'GC6VENR3SP6W2LXD67WHL6AP4ICG2QI2GS7JVYXJZTYGUD3KADZSOV6E'
+const dummySeed = Keypair.random()
 
 console.log('start pumping')
-server.friendbot(dummySeed.publicKey()).call()
-  .then(() => {
-    console.log(`New user created: ${dummySeed.publicKey()}`)
-  })
-  .then(() => server.loadAccount(targetUserPk).then(() => console.log(`target user exists: ${targetUserPk}`)))
-  .catch(err => {
-    throw err
-  })
+server.loadAccount(targetUserPk)
+  .then(() => console.log(`target user exists: ${targetUserPk}`))
+  .catch(err => { throw err })
+  .then(() => server.friendbot(dummySeed.publicKey()).call())
+  .then(() => console.log(`new user created: ${dummySeed.publicKey()}`))
   .then(() => server.loadAccount(dummySeed.publicKey()))
   .then(account => {
     console.log('transfering XLM')
-    const transaction = new StellarSdk.TransactionBuilder(account)
-      .addOperation(StellarSdk.Operation.payment({
+    const transaction = new TransactionBuilder(account)
+      .addOperation(Operation.payment({
         destination: targetUserPk,
-        asset: StellarSdk.Asset.native(),
+        asset: Asset.native(),
         amount: '9998.5'
       }))
-      .addMemo(StellarSdk.Memo.text('your admirer'))
+      .addMemo(Memo.text('your admirer'))
       .build()
     transaction.sign(dummySeed)
     return server.submitTransaction(transaction)
@@ -33,11 +30,11 @@ server.friendbot(dummySeed.publicKey()).call()
   .then(() => {
     console.log('transfer completed')
     return server.loadAccount(targetUserPk)
-      .then(account => account.balances.forEach(b => console.log(b)))
+      .then(account => account.balances
+        .filter(b => b.asset_type === 'native')
+        .forEach(b => console.log(`current balance: ${b.balance}`)))
   })
-  .then(() => {
-    console.log('done')
-  })
+  .then(() => console.log('done'))
   .catch((err) => {
     console.error(err)
   })

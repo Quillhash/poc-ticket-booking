@@ -5,7 +5,6 @@
   - cancel ticket
 */
 
-
 module.exports = (stellar) => {
   const router = require('express').Router()
 

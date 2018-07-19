@@ -1,7 +1,10 @@
 module.exports = (config) => {
-  const { firestoreEventRepository } = require('./eventRepository')
+  const { firestoreEventRepository, inMemoryEventRepository } = require('./eventRepository')
   const { eventStoreFactory } = require('./eventStore')
-  const eventRepository = firestoreEventRepository(config.firebase)
+  const eventRepository = config.liveDataStore
+    ? firestoreEventRepository(config.firebase)
+    : inMemoryEventRepository()
+
   const eventStore = eventStoreFactory(eventRepository)
 
   return eventStore

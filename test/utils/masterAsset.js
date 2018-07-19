@@ -1,8 +1,29 @@
 const { Keypair, Asset, TransactionBuilder, Operation } = require('stellar-sdk')
 const server = require('./stellarServer')
 
+const doLoadAccount = (userPublicKey) => {
+  return server.loadAccount(userPublicKey)
+    .catch(() => null)
+}
+
+// create a new account if not exist
 const createAccount = (userPublicKey) => {
-  return server.friendbot(userPublicKey).call()
+  return doLoadAccount(userPublicKey)
+    .then(account => {
+      if (account != null)
+        return account
+
+      return server.friendbot(userPublicKey).call()
+        .then(() => doLoadAccount(userPublicKey))
+    })
+}
+
+const hasAssetIssued = (asset) => {
+  return server.assets()
+    .forIssuer(asset.getIssuer())
+    .forCode(asset.getCode())
+    .call()
+    .then(result => result.records.length > 0)
 }
 
 const changeTrust = (userKey, asset, limit = null) => {
@@ -39,10 +60,10 @@ const transfer = (srcKey, desPublicKey, amount, asset = Asset.native()) => {
 }
 
 
-const create = async (assetCode, balance) => {
+const create = async (assetCode, balance, issuerKey = Keypair.random(), distributorKey = Keypair.random()) => {
   console.log(`issuing new asset: ${balance} ${assetCode}`)
-  const masterIssuerKey = Keypair.random()
-  const masterDistributorKey = Keypair.random()
+  const masterIssuerKey = issuerKey
+  const masterDistributorKey = distributorKey
 
   console.log('    creating issuer/distributor account')
   await createAccount(masterIssuerKey.publicKey())
@@ -50,8 +71,13 @@ const create = async (assetCode, balance) => {
 
   console.log('    transfering asset to distributor')
   var asset = new Asset(assetCode, masterIssuerKey.publicKey())
-  await changeTrust(masterDistributorKey, asset)
-  await transfer(masterIssuerKey, masterDistributorKey.publicKey(), balance, asset)
+  await hasAssetIssued(asset).then(async issued => {
+    if (issued)
+      return
+
+    await changeTrust(masterDistributorKey, asset)
+    await transfer(masterIssuerKey, masterDistributorKey.publicKey(), balance, asset)
+  })
 
   console.log('asset issued')
   return {
@@ -59,7 +85,6 @@ const create = async (assetCode, balance) => {
     masterDistributorKey,
     asset
   }
-
 }
 
 module.exports = {

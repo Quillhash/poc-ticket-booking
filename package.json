@@ -5,7 +5,7 @@
   "main": "stellar/playground.js",
   "scripts": {
     "pump": "node tools/pump",
-    "test": "mocha --recursive './test/**/*.spec.js'",
+    "test": "ENVIRONMENT=E2E mocha --recursive --timeout 999999 './test/**/*.spec.js'",
     "test:watch": "nodemon -x 'npm run test.'",
     "server": "nodemon src/event/index.js"
   },
@@ -18,7 +18,7 @@
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
-    "firebase-admin": "^5.12.1",
+    "firebase-admin": "5.12.1",
     "flat-file-db": "^1.0.0",
     "request": "^2.87.0",
     "request-promise-native": "^1.0.5",

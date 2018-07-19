@@ -5,20 +5,22 @@ const firebase = require('firebase-admin')
 console.log(path.join(__dirname, 'serviceAccountKey.json'))
 var serviceAccount = require(path.join(__dirname, 'serviceAccountKey.json'))
 
-firebase.initializeApp({
-  credential: firebase.credential.cert(serviceAccount)
+const app = firebase.initializeApp({
+  credential: firebase.credential.cert(serviceAccount),
 })
 
-const db = firebase.firestore()
-
+const db = firebase.firestore(app)
 const testCollection = db.collection('test-event')
 
-console.log(testCollection.doc('doc1').set({'message': 'Hello, World!'}))
+const test = async () => {
+  await testCollection.doc('doc1').set({ 'message': 'Hello, World!' }).then(console.log)
+  await testCollection.select('messge').get().then(q => console.log(q.docs.map(d => d.get())))
 
-console.log(testCollection.select('messge').get().then(d => console.log(d)))
+  const x = await testCollection.select().get().then(x =>
+    x.docs.map(d => d.id)
+  )
 
-const x = testCollection.select().get().then(x =>
-  x.docs.map(d => d.id)
-)
+  console.log(x)
+}
 
-console.log(x.then(console.log))
+test()

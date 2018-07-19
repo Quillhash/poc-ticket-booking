@@ -1,7 +1,10 @@
 module.exports = (config) => {
-  const { firestoreUserRepository } = require('./userRepository')
+  const { firestoreUserRepository, inMemoryUserRepository } = require('./userRepository')
   const { userStoreFactory } = require('./userStore')
-  const userRepository = firestoreUserRepository(config.firebase)
+  const userRepository = config.liveDataStore
+    ? firestoreUserRepository(config.firebase)
+    : inMemoryUserRepository()
+
   const userStore = userStoreFactory(userRepository)
 
   return userStore

@@ -1,7 +1,9 @@
 const { flatFileRepository } = require('./flatFileRepository')
 const { firestoreRepository } = require('./firestoreRepository')
+const { inMemoryRepository } = require('./inMemoryRepository')
 
 module.exports = {
   flatFileUserRepository: flatFileRepository,
-  firestoreUserRepository: (serviceAccountKey, collectionName = 'users' ) => firestoreRepository(serviceAccountKey, collectionName)
+  firestoreUserRepository: (firebase, collectionName = 'users' ) => firestoreRepository(firebase, collectionName),
+  inMemoryUserRepository: inMemoryRepository
 }

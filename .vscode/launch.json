@@ -22,7 +22,10 @@
                 "${workspaceFolder}/test/*/*.spec.js"
             ],
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "ENVIRONMENT": "E2E"
+            }
         },
         {
             "type": "node",
@@ -36,7 +39,10 @@
                 "${file}"
             ],
             "console": "internalConsole",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "ENVIRONMENT": "E2E"
+            }
         }
     ]
 }

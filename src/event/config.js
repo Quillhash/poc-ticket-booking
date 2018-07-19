@@ -14,6 +14,7 @@ firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccountKey)
 })
 
+const liveDataStore = process.env.ENVIRONMENT == null || process.env.ENVIRONMENT === 'PROD'
 
 module.exports = {
   port: parseInt(process.env.PORT) || 3000,
@@ -22,5 +23,6 @@ module.exports = {
   masterAsset,
   firebase,
   stellarUrl,
-  stellarNetwork
+  stellarNetwork,
+  liveDataStore
 }
