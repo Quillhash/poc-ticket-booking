@@ -13,6 +13,8 @@ class Event {
     host,
     email,
     uuid,
+    url,
+    subtitle,
     constraint,
     issuer,
     distributor }) {
@@ -29,6 +31,8 @@ class Event {
     this._host = host
     this._email = email
     this._uuid = uuid
+    this._url = url
+    this._subtitle = subtitle
     this._constriaint = constraint
 
     this._issuer = issuer
@@ -68,6 +72,8 @@ class Event {
       host: this._host,
       email: this._email,
       uuid: this._uuid,
+      url: this.url,
+      subtitle: this.subtitle,
       constraint: this._constriaint,
 
       issuer: this._issuer,

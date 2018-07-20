@@ -16,11 +16,13 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "chalk": "^2.4.1",
+    "claudia-bot-builder": "^4.1.0",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "firebase-admin": "5.12.1",
     "flat-file-db": "^1.0.0",
+    "microtime": "^2.1.8",
     "request": "^2.87.0",
     "request-promise-native": "^1.0.5",
     "response-time": "^2.3.2",
