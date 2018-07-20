@@ -14,6 +14,7 @@ module.exports = (config) => new Promise((resolve, reject) => {
 
   let server = app.listen(config.port, (err) => {
     if (err) {
+      console.error('failed to start app on port.', config.port)
       reject(err)
     } else {
       console.log('app running on port.', config.port)

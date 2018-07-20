@@ -5,7 +5,7 @@ const { create } = require('./utils/masterAsset')
 const randomId = require('./utils/randomId')
 
 const doRequest = (apiPath, payload, method = 'POST') => {
-  const rootPath = 'http://localhost:3000'
+  const rootPath = `http://localhost:${process.env.PORT || 3000}`
   const options = {
     method,
     uri: `${rootPath}/${apiPath}`,
