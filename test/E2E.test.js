@@ -4,10 +4,10 @@ const { Keypair } = require('stellar-sdk')
 const { create } = require('./utils/masterAsset')
 const randomId = require('./utils/randomId')
 
-const doRequest = (apiPath, payload) => {
+const doRequest = (apiPath, payload, method = 'POST') => {
   const rootPath = 'http://localhost:3000'
   const options = {
-    method: 'POST',
+    method,
     uri: `${rootPath}/${apiPath}`,
     body: payload,
     json: true
@@ -56,6 +56,7 @@ describe('Ticketing E2E', () => {
       'coverImage': 'https://bit.ly/2N8jwHG',
       'venue': 'One Building',
       'host': 'One Group',
+      'email': 'someone@example.com',
       'uuid': 'user unique id',
       'limit': 2
     }
@@ -88,7 +89,7 @@ describe('Ticketing E2E', () => {
       'eventCode': nonExistingEventCode
     }
     await doRequest('api/attendee/event/book', payload)
-      .catch(printError).then(printResult)
+      .then(printResult).catch(printError)
   })
 
   it('Attendee book full event', async () => {
@@ -98,7 +99,7 @@ describe('Ticketing E2E', () => {
     }
     await doRequest('api/attendee/event/book', payload).then(printResult)
     await doRequest('api/attendee/event/book', payload)
-      .catch(printError).then(printResult)
+      .then(printResult).catch(printError)
 
   })
 
@@ -123,5 +124,28 @@ describe('Ticketing E2E', () => {
       eventCode
     }
     await doRequest('api/attendee/event/useticket', payload).then(printResult)
+  })
+
+  it('Attendee use without ticket', async () => {
+    const payload = {
+      userId,
+      eventCode
+    }
+    await doRequest('api/attendee/event/useticket', payload)
+      .then(printResult).catch(printError)
+  })
+
+  it('Attendee use ticket by transaction', async () => {
+    const payload = {
+      userId,
+      'eventCode': eventCode
+    }
+    const { tx } = await doRequest('api/attendee/event/book', payload)
+
+    await doRequest(`api/attendee/event/useticket/${tx}`, {}, 'GET')
+      .then(printResult).catch(printError)
+
+    await doRequest('api/organizer/event/list', {})
+      .then(printResult)
   })
 })

@@ -16,7 +16,6 @@ module.exports = (config) => {
   const createEvent = (event) => {
     return eventStore.getOrCreate(event)
       .then(e => {
-        console.log(e)
         return e
       })
   }
@@ -34,7 +33,7 @@ module.exports = (config) => {
       )
   }
 
-  const bookEvent = async (userId, eventCode) => {
+  const bookEvent = async (userId, eventCode, amount = 1) => {
     const event = await eventStore.get(eventCode)
     if (!event) {
       return Promise.reject(new Error('EVENT_NOTFOUND'))
@@ -47,13 +46,15 @@ module.exports = (config) => {
     }
 
     return await userStore.getOrCreate(userId)
-      .then(user => ticketing.bookTicket(user.keypair, event)
+      .then(user => ticketing.bookTicket(user.keypair, event, amount, user.uuid)
         .then(async hash => ({
           tx: hash,
-          count: await ticketing.queryTicketCount(user.keypair, event)
+          uuid: user.uuid,
+          count: await ticketing.queryTicketCount(user.keypair, event),
         })))
       .catch(err => {
         console.error(err)
+
         return Promise.reject(new Error('BOOK_ERROR'))
       })
   }
@@ -103,9 +104,15 @@ module.exports = (config) => {
       return Promise.reject(new Error('EVENT_NOTFOUND'))
     }
 
-    return ticketing.burnTicket(user.keypair, event, amount)
+    const ticketCount = await ticketing.queryTicketCount(user.keypair, event)
+    if (ticketCount <= 0) {
+      return Promise.reject(new Error('USER_NO_TICKET'))
+    }
+
+    return ticketing.burnTicket(user.keypair, event, amount, user.uuid)
       .then(async hash => ({
-        ts: hash,
+        tx: hash,
+        uuid: user.uuid,
         count: await ticketing.queryTicketCount(user.keypair, event)
       }))
       .catch(() => {
@@ -113,7 +120,7 @@ module.exports = (config) => {
       })
   }
 
-  const cancelBooking = async (userId, eventCode) => {
+  const cancelBooking = async (userId, eventCode, amount = 1) => {
     const user = await userStore.get(userId)
     if (!user) {
       return Promise.reject(new Error('USER_NOTFOUND'))
@@ -124,21 +131,21 @@ module.exports = (config) => {
       return Promise.reject(new Error('EVENT_NOTFOUND'))
     }
 
-    return ticketing.queryTicketCount(user.keypair, event).then(count => {
-      if (count <= 0) {
-        return Promise.reject(new Error('USER_NO_TICKET'))
-      }
+    const ticketCount = await ticketing.queryTicketCount(user.keypair, event)
+    if (ticketCount <= 0) {
+      return Promise.reject(new Error('USER_NO_TICKET'))
+    }
 
-      return ticketing.cancelBooking(user.keypair, event)
-        .then(async hash => ({
-          tx: hash,
-          count: await ticketing.queryTicketCount(user.keypair, event)
-        }))
-        .catch(err => {
-          console.err(err)
-          return Promise.reject(new Error('CANCEL_ERROR'))
-        })
-    })
+    return ticketing.cancelBooking(user.keypair, event, amount, user.uuid)
+      .then(async hash => ({
+        tx: hash,
+        uuid: user.uuid,
+        count: await ticketing.queryTicketCount(user.keypair, event)
+      }))
+      .catch(err => {
+        console.err(err)
+        return Promise.reject(new Error('CANCEL_ERROR'))
+      })
   }
 
   const getRemainingTicket = async (eventCode) => {
@@ -149,6 +156,31 @@ module.exports = (config) => {
     return ticketing.queryRemainingTickets(event)
   }
 
+  const praseBookingMemo = (memo) => {
+    const matcher = new RegExp('B:(?<eventCode>\\w*):(?<uuid>[0-9]*)', 'g')
+    const result = matcher.exec(memo)
+
+    return !result || !result.groups
+      ? null
+      : {
+        eventCode: result.groups['eventCode'],
+        uuid: result.groups['uuid']
+      }
+  }
+
+  const useTicketByTransaction = async (txId) => {
+    const memo = await ticketing.queryTransactionMemo(txId).catch(() => '')
+    const {eventCode, uuid} = praseBookingMemo(memo)
+
+    if (!eventCode || !uuid) {
+      return Promise.reject(new Error('INVALID_TX'))
+    }
+
+    const user = await userStore.getByUuid(uuid)
+
+    return useTicket(user.userId, eventCode)
+  }
+
   return {
     createEvent,
     getAllEvents,
@@ -157,6 +189,8 @@ module.exports = (config) => {
     getBookedEvents,
     cancelBooking,
     useTicket,
-    getRemainingTicket
+    getRemainingTicket,
+    useTicketByTransaction,
+    praseBookingMemo
   }
 }

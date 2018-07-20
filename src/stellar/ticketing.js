@@ -1,27 +1,10 @@
 const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
-  const bookTicket = async (user, event, amount = 1) => {
-    return stellarWrapper.doBookTicket(masterAccount, masterAsset, user, event, amount)
-    // await stellarWrapper.changeTrust(user, event.asset)
-    //   .then(() => console.log('change trust: completed'))
-
-    // // transfer masterAsset to user
-    // await stellarWrapper.transfer(masterAccount, user.publicKey(), amount, masterAsset)
-    //   .then(() => console.log('transfer masterAsset to user: completed'))
-
-    // // swap asset
-    // return await stellarWrapper.swap(event.distributor, event.asset, user, masterAsset, amount, amount)
-    //   .then(hash => {
-    //     console.log(`swap asset ${hash}`)
-    //     return hash
-    //   })
+  const bookTicket = async (user, event, amount = 1, uuid = '') => {
+    return stellarWrapper.doBookTicket(masterAccount, masterAsset, user, event, amount, `B:${event.asset.getCode()}:${uuid}`)
   }
 
-  const cancelBooking = async (user, event, amount = 1) => {
-    return await stellarWrapper.swap(user, event.asset, event.distributor, masterAsset, amount, amount)
-    // .then(hash => {
-    //   console.log(`swap asset ${hash}`)
-    //   return hash
-    // })
+  const cancelBooking = async (user, event, amount = 1, uuid = '') => {
+    return await stellarWrapper.swap(user, event.asset, event.distributor, masterAsset, amount, amount, `X:${event.asset.getCode()}:${uuid}`)
   }
 
   const queryRemainingTickets = (event) => {
@@ -74,8 +57,8 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
     return Math.min(currentBalance, totalBalance < 0 ? 0 : totalBalance)
   }
 
-  const burnTicket = (user, event, amount = 1) => {
-    return stellarWrapper.transfer(user, event.issuer.publicKey(), amount, event.asset)
+  const burnTicket = (user, event, amount = 1, uuid = '') => {
+    return stellarWrapper.transfer(user, event.issuer.publicKey(), amount, event.asset, `C:${event.asset.getCode()}:${uuid}`)
   }
 
   const queryBookedTickets = (user) => {
@@ -87,12 +70,17 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
         })))
   }
 
+  const queryTransactionMemo = async (txId) => {
+    return stellarWrapper.queryTransactionMemo(txId)
+  }
+
   return {
     bookTicket,
     queryRemainingTickets,
     queryTicketCount,
     burnTicket,
     queryBookedTickets,
+    queryTransactionMemo,
     cancelBooking
   }
 }

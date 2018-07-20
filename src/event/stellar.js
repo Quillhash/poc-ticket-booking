@@ -31,6 +31,10 @@ module.exports = (stellarEngine) => {
     return stellarEngine.useTicket(userId, eventCode)
   }
 
+  const useTicketByTransaction = (txId) => {
+    return stellarEngine.useTicketByTransaction(txId)
+  }
+
   return {
     createEvent,
     getAllEvents,
@@ -39,6 +43,7 @@ module.exports = (stellarEngine) => {
     cancelBooking,
     useTicket,
     cancelEvent,
-    getBookedCount
+    getBookedCount,
+    useTicketByTransaction
   }
 }

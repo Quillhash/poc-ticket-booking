@@ -121,7 +121,7 @@ module.exports = (server) => {
       .then(() => transfer(issuingAccount, distributorAccount.publicKey(), limit, asset))
   }
 
-  const transfer = (srcKey, desPublicKey, amount, asset = StellarSdk.Asset.native()) => {
+  const transfer = (srcKey, desPublicKey, amount, asset = StellarSdk.Asset.native(), memo = null) => {
     return server.loadAccount(desPublicKey)
       .catch(err => {
         throw err
@@ -134,7 +134,7 @@ module.exports = (server) => {
             asset: asset,
             amount: `${amount}`
           }))
-          .addMemo(safeMemoText(`Tx: ${Date.now()}`))
+          .addMemo(safeMemoText(memo ? memo : `Tx: ${Date.now()}`))
           .build()
         transaction.sign(masterSigner || srcKey)
         return server.submitTransaction(transaction)
@@ -177,7 +177,7 @@ module.exports = (server) => {
       })
   }
 
-  const swap = (srcKey, sellingAsset, buyer, buyingAsset, sellingAmount, buyingPrice) => {
+  const swap = (srcKey, sellingAsset, buyer, buyingAsset, sellingAmount, buyingPrice, memo = null) => {
     return server.loadAccount(srcKey.publicKey())
       .then(account => {
         const transaction = new StellarSdk.TransactionBuilder(account)
@@ -195,7 +195,7 @@ module.exports = (server) => {
             price: sellingAmount,
             source: buyer.publicKey()
           }))
-          .addMemo(safeMemoText(`swap ${sellingAsset.getCode()} -> ${buyingAsset.getCode()}`))
+          .addMemo(safeMemoText(memo ? memo : `swap ${sellingAsset.getCode()} -> ${buyingAsset.getCode()}`))
           .build()
         transaction.sign(masterSigner || srcKey)
         return server.submitTransaction(transaction)
@@ -242,7 +242,7 @@ module.exports = (server) => {
       })
   }
 
-  const doBookTicket = (masterAccount, masterAsset, user, event, amount) => {
+  const doBookTicket = (masterAccount, masterAsset, user, event, amount, memo) => {
     return server.loadAccount(masterAccount.publicKey())
       .then(account => {
         const transaction = new StellarSdk.TransactionBuilder(account)
@@ -269,7 +269,7 @@ module.exports = (server) => {
             price: amount,
             source: user.publicKey()
           }))
-          .addMemo(safeMemoText(`book:${event.asset.getCode()}`))
+          .addMemo(safeMemoText(`${memo ? memo : `book:${event.asset.getCode()}`}`))
           .build()
 
         transaction.sign(masterSigner)
@@ -347,6 +347,15 @@ module.exports = (server) => {
       .then(account => account.balances)
   }
 
+  const queryTransactionMemo = (txId) => {
+    return server.transactions()
+      .transaction(txId)
+      .call()
+      .then(result =>
+        result.memo
+      )
+  }
+
   return {
     setMasterSigner,
     hasAssetIssued,
@@ -362,6 +371,7 @@ module.exports = (server) => {
     queryOperations,
     queryAllAsstes,
     swap,
-    doBookTicket
+    doBookTicket,
+    queryTransactionMemo
   }
 }

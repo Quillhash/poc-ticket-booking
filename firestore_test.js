@@ -10,17 +10,40 @@ const app = firebase.initializeApp({
 })
 
 const db = firebase.firestore(app)
-const testCollection = db.collection('test-event')
+var citiesRef = db.collection('cities')
 
 const test = async () => {
-  await testCollection.doc('doc1').set({ 'message': 'Hello, World!' }).then(console.log)
-  await testCollection.select('messge').get().then(q => console.log(q.docs.map(d => d.get())))
+  await citiesRef.doc('SF').set({
+    name: 'San Francisco', state: 'CA', country: 'USA',
+    capital: false, population: 860000
+  })
+  await citiesRef.doc('LA').set({
+    name: 'Los Angeles', state: 'CA', country: 'USA',
+    capital: false, population: 3900000
+  })
+  await citiesRef.doc('DC').set({
+    name: 'Washington, D.C.', state: null, country: 'USA',
+    capital: true, population: 680000
+  })
+  await citiesRef.doc('TOK').set({
+    name: 'Tokyo', state: null, country: 'Japan',
+    capital: true, population: 9000000
+  })
+  await citiesRef.doc('BJ').set({
+    name: 'Beijing', state: null, country: 'China',
+    capital: true, population: 21500000
+  })
 
-  const x = await testCollection.select().get().then(x =>
-    x.docs.map(d => d.id)
-  )
+  return citiesRef.where('name', '==', 'Beijing').get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        console.log(doc.id, '=>', doc.data())
+      })
+    })
+    .catch(err => {
+      console.log('Error getting documents', err)
+    })
 
-  console.log(x)
 }
 
-test()
+test().then(() => console.log('done'))

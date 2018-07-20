@@ -43,10 +43,21 @@ module.exports = (stellar) => {
       .catch(err => res.status(400).send(err.message))
   }
 
-  const useTicket = (req, res) => {
+  const useTicketByUserId = (req, res) => {
     const userId = req.body.userId
     const eventCode = req.body.eventCode
     return stellar.useTicket(userId, eventCode)
+      .then(response => res.status(200).send(response))
+      .catch(err => res.status(400).send(err.message))
+  }
+
+  const useTicketByTransaction = (req, res) => {
+    const txId = req.params.tx
+    if (!txId) {
+      res.status(400).send('INVALID_REQUEST')
+      return
+    }
+    return stellar.useTicketByTransaction(txId)
       .then(response => res.status(200).send(response))
       .catch(err => res.status(400).send(err.message))
   }
@@ -55,7 +66,8 @@ module.exports = (stellar) => {
   router.post('/event/book', bookEvent)
   router.post('/event/cancel', cancelBooking)
   router.post('/event/booked', getBookedEvents)
-  router.post('/event/useticket', useTicket)
+  router.post('/event/useticket', useTicketByUserId)
+  router.get('/event/useticket/:tx', useTicketByTransaction)
 
   return router
 }

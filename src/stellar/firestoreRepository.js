@@ -28,7 +28,18 @@ const firestoreRepository = (firebase, collectionName) => {
   }
 
   const keys = () => {
-    return  collection.select().get().then(x => x.docs.map(d => d.id))
+    return collection.select().get().then(x => x.docs.map(d => d.id))
+  }
+
+  const query = (field, value) => {
+    return collection.where(field, '==', value).get()
+      .then(sanpshot => {
+        return sanpshot.docs.map(doc => doc.data())
+      })
+      .catch(err => {
+        console.log('Error getting documents', err)
+        return null
+      })
   }
 
   const close = () => {
@@ -40,7 +51,8 @@ const firestoreRepository = (firebase, collectionName) => {
     del,
     close,
     has,
-    keys
+    keys,
+    query,
   }
 }
 

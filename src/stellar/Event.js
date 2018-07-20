@@ -11,6 +11,7 @@ class Event {
     coverImage,
     venue,
     host,
+    email,
     uuid,
     constraint,
     issuer,
@@ -26,6 +27,7 @@ class Event {
     this._coverImage = coverImage
     this._venue = venue
     this._host = host
+    this._email = email
     this._uuid = uuid
     this._constriaint = constraint
 
@@ -64,6 +66,7 @@ class Event {
       coverImage: this._coverImage,
       venue: this._venue,
       host: this._host,
+      email: this._email,
       uuid: this._uuid,
       constraint: this._constriaint,
 

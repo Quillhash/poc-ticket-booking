@@ -26,13 +26,20 @@ const flatFileRepository = (filePath) => {
     db.close()
   }
 
+  const query = async (field, value) => {
+    return db.keys()
+      .filter(k => db.get(k)[field] === value)
+      .map(k => db.get(k))
+  }
+
   return {
     put,
     get,
     del,
     close,
     has,
-    keys
+    keys,
+    query
   }
 }
 

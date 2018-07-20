@@ -27,13 +27,20 @@ const inMemoryRepository = () => {
     _store = {}
   }
 
+  const query = async (field, value) => {
+    return Object.keys(_store)
+      .filter(k => _store[k][field] === value)
+      .map(k => _store[k])
+  }
+
   return {
     put,
     get,
     del,
     close,
     has,
-    keys
+    keys,
+    query
   }
 }
 

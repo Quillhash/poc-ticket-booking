@@ -1,5 +1,9 @@
 const { User } = require('./User')
 
+const randNum = (min = 100, max = 1000) => {
+  return Math.floor(Math.random() * (max - min) + min)
+}
+
 const userStoreFactory = (userRepository) => {
   let stellarUserCreator = null
 
@@ -14,28 +18,33 @@ const userStoreFactory = (userRepository) => {
     }
 
     return stellarUserCreator()
-      .then(stellarUser => {
+      .then(async stellarUser => {
         user = {
-          userId: userId,
+          user_id: userId,
           account_id: stellarUser.publicKey,
-          memo: Date.now()
+          uuid: `${Date.now()}${randNum()}`
         }
 
-        userRepository.put(userId, user)
+        await userRepository.put(userId, user)
         return User.fromJSON(user)
       })
   }
 
   const get = async (userId) => {
     let user = await userRepository.get(userId)
-
     return user ? User.fromJSON(user) : null
+  }
+
+  const getByUuid = async (uuid) => {
+    let users = await userRepository.query('uuid', uuid)
+    return users && users.length > 0 ? User.fromJSON(users[0]) : null
   }
 
   return {
     setUserCreator,
     getOrCreate,
-    get
+    get,
+    getByUuid
   }
 }
 

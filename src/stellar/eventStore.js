@@ -15,10 +15,10 @@ const eventStoreFactory = (eventRepository) => {
     }
 
     return stellarEventCreator(event.code, event.limit)
-      .then(stellarEvent => {
+      .then(async stellarEvent => {
         console.log(`new event created: ${stellarEvent.code}`)
         let newEvent = Object.assign({}, stellarEvent, event)
-        eventRepository.put(event.code, newEvent)
+        await eventRepository.put(event.code, newEvent)
         return Event.fromJSON(newEvent)
       })
   }
