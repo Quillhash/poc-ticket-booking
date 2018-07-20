@@ -17,12 +17,23 @@ module.exports = (stellar) => {
     })
   }
 
-  const bookEvent = (req, res) => {
+  const bookEvent = async (req, res) => {
     const userId = req.body.userId
-    const eventCode = req.body.eventCode
-    return stellar.bookEvent(userId, eventCode)
-      .then(response => res.status(200).send(response))
-      .catch(err => res.status(400).send(err.message))
+    let eventCode = req.body.eventCode
+    const title = req.body.title
+
+    if (title && !eventCode) {
+      const event = await stellar.getAllEvents().then(events => events.find(e => e.title === title))
+      eventCode = event ? event.code : ''
+    }
+
+    if (eventCode) {
+      return stellar.bookEvent(userId, eventCode)
+        .then(response => res.status(200).send(response))
+        .catch(err => res.status(400).send(err.message))
+    }
+
+    return res.status(400).send('EVENT_NOTFOUND')
   }
 
   const getBookedEvents = (req, res) => {

@@ -31,6 +31,7 @@ describe('Ticketing E2E', () => {
   const masterIssuerSecret = 'SBIQ3MNIPU2BTWSYHKAYHX2D3465LWRPD4DXPSVEGDFJAZGIQII6SGOY'
   const masterDistributorSecret = 'SDWQCC4TKKCFUAWACSJHIZPADJG7MNCPT6OXGNTGRY5JHHQ7LWAWEA45'
   const eventCode = `E2E${randomId(3)}`
+  const eventTitle = 'The Amazing Event'
   const nonExistingEventCode = `NE2E${randomId(3)}`
 
   before(async () => {
@@ -51,7 +52,7 @@ describe('Ticketing E2E', () => {
       'code': eventCode,
       'startDate': '2018-07-11T18:06:59.713Z',
       'endDate': '2018-07-11T18:06:59.713Z',
-      'title': 'event title',
+      'title': eventTitle,
       'description': 'description',
       'coverImage': 'https://bit.ly/2N8jwHG',
       'venue': 'One Building',
@@ -138,7 +139,7 @@ describe('Ticketing E2E', () => {
   it('Attendee use ticket by transaction', async () => {
     const payload = {
       userId,
-      'eventCode': eventCode
+      'title': eventTitle
     }
     const { tx } = await doRequest('api/attendee/event/book', payload)
 
