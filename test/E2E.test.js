@@ -142,7 +142,10 @@ describe('Ticketing E2E', () => {
     }
     const { tx } = await doRequest('api/attendee/event/book', payload)
 
-    await doRequest(`api/attendee/event/useticket/${tx}`, {}, 'GET')
+    const ret = await doRequest(`api/attendee/event/confirm/${tx}`, {}, 'GET')
+    console.log(ret)
+
+    await doRequest(`api/attendee/event/useticket/${ret.tx}`, {}, 'GET')
       .then(printResult).catch(printError)
 
     await doRequest('api/organizer/event/list', {})

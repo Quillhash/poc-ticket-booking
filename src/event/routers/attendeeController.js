@@ -62,11 +62,23 @@ module.exports = (stellar) => {
       .catch(err => res.status(400).send(err.message))
   }
 
+  const confirmTicketByTransaction = (req, res) => {
+    const txId = req.params.tx
+    if (!txId) {
+      res.status(400).send('INVALID_REQUEST')
+      return
+    }
+    return stellar.confirmTicketByTransaction(txId)
+      .then(response => res.status(200).send(response))
+      .catch(err => res.status(400).send(err.message))
+  }
+
   router.use('/event/list', getAllEvents)
   router.post('/event/book', bookEvent)
   router.post('/event/cancel', cancelBooking)
   router.post('/event/booked', getBookedEvents)
   router.post('/event/useticket', useTicketByUserId)
+  router.get('/event/confirm/:tx', confirmTicketByTransaction)
   router.get('/event/useticket/:tx', useTicketByTransaction)
 
   return router

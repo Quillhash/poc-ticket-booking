@@ -181,6 +181,30 @@ module.exports = (config) => {
     return useTicket(user.userId, eventCode)
   }
 
+  const confirmTicketByTransaction = async (txId) => {
+    const memo = await ticketing.queryTransactionMemo(txId).catch(() => '')
+    const {eventCode, uuid} = praseBookingMemo(memo)
+
+    if (!eventCode || !uuid) {
+      return Promise.reject(new Error('INVALID_TX'))
+    }
+
+    const user = await userStore.getByUuid(uuid)
+
+    return getBookedCount(user.userId, eventCode)
+      .then(async count => {
+        if (count <= 0) {
+          return Promise.reject(new Error('USER_NO_TICKET'))
+        }
+
+        return {
+          tx: txId,
+          user: user.toJSON(),
+          count: count
+        }
+      })
+  }
+
   return {
     createEvent,
     getAllEvents,
@@ -191,6 +215,7 @@ module.exports = (config) => {
     useTicket,
     getRemainingTicket,
     useTicketByTransaction,
-    praseBookingMemo
+    praseBookingMemo,
+    confirmTicketByTransaction
   }
 }
