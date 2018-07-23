@@ -5,7 +5,7 @@
   "main": "stellar/playground.js",
   "scripts": {
     "pump": "node tools/pump",
-    "test": "ENVIRONMENT=E2E mocha --recursive --timeout 999999 './test/**/*.test.js'",
+    "test": "ENVIRONMENT=E2E mocha --recursive --timeout 999999 './test/**/E2EChat.test.js'",
     "test:prod": "ENVIRONMENT=PROD mocha --recursive --timeout 999999 './test/**/*.test.js'",
     "test:watch": "nodemon -x 'npm run test.'",
     "server": "nodemon src/event/index.js",
@@ -17,7 +17,7 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "chalk": "^2.4.1",
-    "claudia-bot-builder": "^4.1.0",
+    "claudia-bot-builder": "^4.2.0",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",

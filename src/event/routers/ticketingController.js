@@ -16,7 +16,7 @@ module.exports = (stellar) => {
     events.forEach(event => {
       generic.addBubble(event.title, event.subtitle)
         .addImage(event.coverImage)
-        // .addDefaultAction(event.url)
+        .addDefaultAction(event.url)
         .addButton('See more detail', event.url)
         .addButton(`Join ${event.title}`, `Join ${event.title}`)
     })
