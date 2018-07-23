@@ -43,6 +43,23 @@
             "env": {
                 "ENVIRONMENT": "E2E"
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Specific test",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--timeout",
+                "999999",
+                "--colors",
+                "${workspaceFolder}/testqr.js"
+            ],
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "ENVIRONMENT": "E2E"
+            }
         }
     ]
 }

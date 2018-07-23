@@ -8,10 +8,14 @@ const masterAsset = new StellarSdk.Asset(masterAssetCode, masterIssuerKey.public
 const stellarUrl = process.env.STELLAR_URL || 'https://horizon-testnet.stellar.org'
 const stellarNetwork = process.env.STELLAR_NETWORK || 'test'
 
+const confirmDomain = 'https://catcat.io/api/ticketing/confirm/'
+const bucketName = 'ticketing-dlt-poc.appspot.com'
+
 const serviceAccountKey = require(path.join(process.cwd(), 'serviceAccountKey.json'))
 const firebase = require('firebase-admin')
 firebase.initializeApp({
-  credential: firebase.credential.cert(serviceAccountKey)
+  credential: firebase.credential.cert(serviceAccountKey),
+  storageBucket: 'ticketing-dlt-poc.appspot.com'
 })
 
 const liveDataStore = process.env.ENVIRONMENT == null || process.env.ENVIRONMENT === 'PROD'
@@ -24,5 +28,8 @@ module.exports = {
   firebase,
   stellarUrl,
   stellarNetwork,
-  liveDataStore
+  liveDataStore,
+  confirmDomain,
+  bucketName
 }
+

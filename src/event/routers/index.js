@@ -1,9 +1,9 @@
-const routers = (stellarEngine) => {
+const routers = (stellarEngine, qrGenerator) => {
   const router = require('express').Router()
 
   const attendeeController = require('./attendeeController')(stellarEngine)
   const organizerController = require('./organizerController')(stellarEngine)
-  const ticketingController = require('./ticketingController')(stellarEngine)
+  const ticketingController = require('./ticketingController')(stellarEngine, qrGenerator)
 
   router.use('/attendee', attendeeController)
   router.use('/organizer', organizerController)

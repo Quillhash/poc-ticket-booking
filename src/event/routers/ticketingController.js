@@ -5,7 +5,7 @@
   - cancel ticket
 */
 
-module.exports = (stellar) => {
+module.exports = (stellar, qrGenerator) => {
   const microtime = require('microtime')
   const { fbTemplate } = require('claudia-bot-builder')
   const router = require('express').Router()
@@ -26,7 +26,7 @@ module.exports = (stellar) => {
 
   const toBookResponse = (bookingInfo) => {
     // NC:TODO: Generate QR Code and store in firebase
-    const imgUrl = `https://firebasestorage.googleapis.com/v0/b/catcatchatbot.appspot.com/o/0b0a69b119e86bb5c66bd1e3e72f853062bec514375c4ad25187a945891fa18b.png?alt=media&token=69e49c03-1d9b-4749-a529-2d3ac6b900e3?${bookingInfo.tx}`
+    const imgUrl = bookingInfo.imgUrl
     const ret = new fbTemplate.Image(imgUrl).get()
     ret.tx = bookingInfo.tx
     return ret
@@ -51,6 +51,9 @@ module.exports = (stellar) => {
 
     if (eventCode) {
       return stellar.bookEvent(userId, eventCode)
+        .then(response => {
+          return qrGenerator(response.tx, response.tx).then(url => (response.imgUrl = url, response))
+        })
         .then(response => res.status(200).send(toBookResponse(response)))
         .catch(err => res.status(400).send(err.message))
     }
