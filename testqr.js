@@ -1,4 +1,4 @@
-const AwesomeQRCode = require('awesome-qr')
+const AwesomeQRCode = require('./src/lib/awesome-qr-node')
 const fs = require('fs')
 // const logo = require('./logo.png')
 
@@ -6,7 +6,7 @@ const {Image} = require('canvas')
 
 
 const img = new Image()
-img.src = './logo.png'
+img.src = './src/event/logo.png'
 
 // const qr = new AwesomeQRCode().create({
 //   text: 'Makito loves Kafuu Chino.',
@@ -32,7 +32,7 @@ img.src = './logo.png'
 
 describe('XX', () => {
   it ('done', (done) => {
-    const qr = new AwesomeQRCode().create({
+    new AwesomeQRCode().create({
       text: 'https://catcat.io/api/ticketing/confirm/15790e61ed6990c2af3597607c1b0a32467fcde1b70c2eecae6f52e488683fd3',
       size: 500,
       autoColor: true,
@@ -43,7 +43,7 @@ describe('XX', () => {
       // maskedDots: true,
       logoImage: img,
       logoScale: 0.2,
-      logoMargin: 3,
+      logoMargin: 3.5,
       logoCornerRadius: 0,
       callback: (data) => {
         if (data === undefined) {
@@ -54,6 +54,7 @@ describe('XX', () => {
           fs.writeFile('qr-out.png', data, (err) =>
             err && console.error(err))
 
+          console.log('done')
           done()
         }
       }

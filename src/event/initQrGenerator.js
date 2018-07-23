@@ -1,5 +1,5 @@
 module.exports = (config) => {
-  const AwesomeQRCode = require('awesome-qr')
+  const AwesomeQRCode = require('../lib/awesome-qr-node')
   const { Image } = require('canvas')
 
   const UUID = require('uuid-v4')
