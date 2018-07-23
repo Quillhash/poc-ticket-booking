@@ -33,7 +33,7 @@
 let fs = require('fs');
 let http = require('http');
 let url = require('url');
-let Canvas = require('canvas-prebuilt');
+let Canvas = require('canvas');
 let Image = Canvas.Image;
 let request = require('request');
 
@@ -988,7 +988,7 @@ var Drawing = (function() { // Drawing in Canvas
         this._elCanvas = new Canvas(htOption.size, htOption.size);
         //this._elCanvas.width = htOption.size;
         //this._elCanvas.height = htOption.size;
-        this._oContext = this._elCanvas.getContext('2d');
+        this._oContext = this._elCanvas.getContext('2d', { antialias: false });
         //this._oContext = this._elCanvas.getContext("2d");
         this._bIsPainted = false;
         this._bSupportDataURI = null;
@@ -1018,7 +1018,7 @@ var Drawing = (function() { // Drawing in Canvas
         var size = viewportSize + 2 * margin;
 
         var _tCanvas = new Canvas(size, size);
-        var _oContext = _tCanvas.getContext("2d");
+        var _oContext = _tCanvas.getContext("2d", {antialias: false});
         //_tCanvas.width = size;
         //_tCanvas.height = size;
 
@@ -1050,7 +1050,7 @@ var Drawing = (function() { // Drawing in Canvas
                 _htOption.colorDark = "rgb(" + avgRGB.r + ", " + avgRGB.g + ", " + avgRGB.b + ")";
             }
 
-            if (false && _htOption.maskedDots) {
+            if (_htOption.maskedDots) {
                 _maskCanvas = new Canvas(size, size);
                 //_maskCanvas.width = size;
                 //_maskCanvas.height = size;
@@ -1074,10 +1074,8 @@ var Drawing = (function() { // Drawing in Canvas
                  whiteMargin ? 0 : -margin, whiteMargin ? 0 : -margin, whiteMargin ? viewportSize : size, whiteMargin ? viewportSize : size);
                  */
 
-                var backgroundImage = new Image();
-                backgroundImage.src = _htOption.backgroundImage;
-                _bContext.drawImage(backgroundImage,
-                    0, 0, backgroundImage.width,backgroundImage.height,
+                _bContext.drawImage(_htOption.backgroundImage,
+                    0, 0, _htOption.backgroundImage.width, _htOption.backgroundImage.height,
                     0, 0, size, size);
                 _bContext.rect(0, 0, size, size);
                 _bContext.fillStyle = backgroundDimming;
@@ -1116,14 +1114,15 @@ var Drawing = (function() { // Drawing in Canvas
                 _oContext.strokeStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;
                 _oContext.lineWidth = 0.5;
                 _oContext.fillStyle = bIsDark ? _htOption.colorDark : "rgba(255, 255, 255, 0.6)"; //_htOption.colorLight;
+                const dotsize = (bProtected ? (isBlkPosCtr ? 1 : 1) : dotScale) * nSize
                 if (agnPatternCenter.length === 0) {
                     // if align pattern list is empty, then it means that we don't need to leave room for the align patterns
                     if (!bProtected)
-                        _fillRectWithMask(_oContext, nLeft, nTop, (bProtected ? (isBlkPosCtr ? 1 : 1) : dotScale) * nSize, (bProtected ? (isBlkPosCtr ? 1 : 1) : dotScale) * nSize, _maskCanvas, bIsDark);
+                        _fillRectWithMask(_oContext, nLeft, nTop, dotsize, dotsize, _maskCanvas, bIsDark);
                 } else {
                     var inAgnRange = ((col < nCount - 4 && col >= nCount - 4 - 5 && row < nCount - 4 && row >= nCount - 4 - 5));
                     if (!bProtected && !inAgnRange)
-                        _fillRectWithMask(_oContext, nLeft, nTop, (bProtected ? (isBlkPosCtr ? 1 : 1) : dotScale) * nSize, (bProtected ? (isBlkPosCtr ? 1 : 1) : dotScale) * nSize, _maskCanvas, bIsDark);
+                        _fillRectWithMask(_oContext, nLeft, nTop, dotsize, dotsize, _maskCanvas, bIsDark);
                 }
             }
         }
@@ -1177,9 +1176,15 @@ var Drawing = (function() { // Drawing in Canvas
         _oContext.fillRect((nCount - 7 + 2) * nSize, 2 * nSize, 3 * nSize, 3 * nSize);
         _oContext.fillRect(2 * nSize, (nCount - 7 + 2) * nSize, 3 * nSize, 3 * nSize);
 
+        // timing patterns
         for (var i = 0; i < nCount - 8; i += 2) {
-            _oContext.fillRect((8 + i) * nSize, 6 * nSize, nSize, nSize);
-            _oContext.fillRect(6 * nSize, (8 + i) * nSize, nSize, nSize);
+            const xSize = dotScale * nSize
+            var hLeft = vTop = (8 + i) * nSize + ((1 - dotScale) * 0.5 * nSize);
+            var hTop = vLeft = 6 * nSize + ((1 - dotScale) * 0.5 * nSize);
+            // horizontal
+            _oContext.fillRect(hLeft, hTop, xSize, xSize);
+            // vertical
+             _oContext.fillRect(vLeft, vTop, xSize, xSize);
         }
         for (var i = 0; i < agnPatternCenter.length; i++) {
             for (var j = 0; j < agnPatternCenter.length; j++) {
@@ -1212,8 +1217,6 @@ var Drawing = (function() { // Drawing in Canvas
             var logoScale = _htOption.logoScale;
             var logoMargin = _htOption.logoMargin;
             var logoCornerRadius = _htOption.logoCornerRadius;
-            var logoImage = new Image();
-            logoImage.src = _htOption.logoImage;
             if (logoScale <= 0 || logoScale >= 1.0) {
                 logoScale = 0.2;
             }
@@ -1225,6 +1228,7 @@ var Drawing = (function() { // Drawing in Canvas
             }
 
             _oContext.restore();
+            _oContext.translate(margin, margin);
 
             var logoSize = viewportSize * logoScale;
             var x = 0.5 * (size - logoSize);
@@ -1240,7 +1244,7 @@ var Drawing = (function() { // Drawing in Canvas
             _oContext.save();
             _prepareRoundedCornerClip(_oContext, x, y, logoSize, logoSize, logoCornerRadius);
             _oContext.clip();
-            _oContext.drawImage(logoImage, x, y, logoSize, logoSize);
+            _oContext.drawImage(_htOption.logoImage, x, y, logoSize, logoSize);
             _oContext.restore();
         }
         // Swap and merge the foreground and the background
@@ -1248,7 +1252,7 @@ var Drawing = (function() { // Drawing in Canvas
         _oContext.drawImage(_bkgCanvas, -margin, -margin, size, size);
 
         // Binarize the final image
-        if (false && _htOption.binarize) {
+        if (_htOption.binarize) {
             var pixels = _oContext.getImageData(0, 0, size, size);
             var threshold = 128;
             if (parseInt(_htOption.binarizeThreshold) > 0 && parseInt(_htOption.binarizeThreshold) < 255) {
@@ -1275,7 +1279,7 @@ var Drawing = (function() { // Drawing in Canvas
 
         // Scale the final image
         var _fCanvas = new Canvas(rawSize, rawSize); //document.createElement("canvas");
-        var _fContext = _fCanvas.getContext("2d");
+        var _fContext = _fCanvas.getContext("2d", {antialias: false});
         //_fCanvas.width = rawSize;
         //_fCanvas.height = rawSize;
         _fContext.drawImage(_tCanvas, 0, 0, rawSize, rawSize);
@@ -1357,11 +1361,27 @@ function _drawAlignProtector(context, centerX, centerY, nWidth, nHeight) {
 }
 
 function _drawAlign(context, centerX, centerY, nWidth, nHeight) {
-    context.fillRect((centerX - 2) * nWidth, (centerY - 2) * nHeight, nWidth, 4 * nHeight);
-    context.fillRect((centerX + 2) * nWidth, (centerY - 2 + 1) * nHeight, nWidth, 4 * nHeight);
-    context.fillRect((centerX - 2 + 1) * nWidth, (centerY - 2) * nHeight, 4 * nWidth, nHeight);
-    context.fillRect((centerX - 2) * nWidth, (centerY + 2) * nHeight, 4 * nWidth, nHeight);
-    context.fillRect(centerX * nWidth, centerY * nHeight, nWidth, nHeight);
+    var dotScale = 0.35
+    var xyOffset = (1 - dotScale) * 0.5
+    const dotSize = dotScale * nWidth
+
+    var i = 0
+    while (i < 4) {
+        context.fillStyle = "rgba(0, 0, 0, 1)";
+        context.fillRect((centerX - 2) * nWidth + (xyOffset * nWidth), (centerY - 2) * nHeight + (i * nHeight) + (xyOffset * nWidth), dotSize, dotSize);
+        context.fillRect((centerX + 2) * nWidth + (xyOffset * nWidth), (centerY - 2 + 1) * nHeight + (i * nHeight) + (xyOffset * nWidth), dotSize, dotSize);
+        context.fillRect((centerX - 2 + 1) * nWidth + (i * nWidth) + (xyOffset * nWidth), (centerY - 2) * nHeight + (xyOffset * nWidth), dotSize, dotSize);
+        context.fillRect((centerX - 2) * nWidth + (i * nWidth) + (xyOffset * nWidth), (centerY + 2) * nHeight + (xyOffset * nWidth), dotSize, dotSize);
+        i++
+    }
+
+    // context.fillRect((centerX - 2) * nWidth, (centerY - 2) * nHeight, nWidth, 4 * nHeight);
+    // context.fillRect((centerX + 2) * nWidth, (centerY - 2 + 1) * nHeight, nWidth, 4 * nHeight);
+    // context.fillRect((centerX - 2 + 1) * nWidth, (centerY - 2) * nHeight, 4 * nWidth, nHeight);
+    // context.fillRect((centerX - 2) * nWidth, (centerY + 2) * nHeight, 4 * nWidth, nHeight);
+    // context.fillRect(centerX * nWidth, centerY * nHeight, nWidth, nHeight);
+
+    _fillRectWithMask(context, centerX * nWidth + (xyOffset * nWidth), centerY * nHeight + (xyOffset * nHeight), dotScale * nWidth, dotScale * nHeight)
 }
 
 AwesomeQRCode = function() {};
@@ -1471,9 +1491,8 @@ AwesomeQRCode.prototype.clear = function() {
 
 AwesomeQRCode.CorrectLevel = QRErrorCorrectLevel;
 
-function getAverageRGB(imgSrc) {
-    var imgEl = new Image();
-    imgEl.src = imgSrc;
+function getAverageRGB(imgEl) {
+
     var blockSize = 5,
         defaultRGB = {
             r: 0,
