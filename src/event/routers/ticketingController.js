@@ -39,8 +39,37 @@ module.exports = (stellar, qrGenerator) => {
     })
   }
 
+  // const bookEvent = async (req, res) => {
+  //   const userId = `${microtime.now()}`
+  //   const title = req.body.parameters['event-title']
+  //   let eventCode
+
+  //   if (title) {
+  //     const event = await stellar.getAllEvents().then(events => events.find(e => e.title === title))
+  //     eventCode = event ? event.code : ''
+  //   }
+
+  //   if (eventCode) {
+  //     console.log(`start book an event: ${eventCode}`)
+  //     const startTime = Date.now()
+  //     return stellar.bookEvent(userId, eventCode)
+  //       .then(response => {
+  //         const timeUsed = Date.now() - startTime
+  //         console.warn(`booking timeUsed: ${timeUsed} ms`)
+  //         return qrGenerator(response.tx, response.tx).then(url => (response.imgUrl = url, response))
+  //       })
+  //       .then(response => res.status(200).send(toBookResponse(response)))
+  //       .then(() => {
+  //         const timeUsed = Date.now() - startTime
+  //         console.warn(`total timeUsed: ${timeUsed} ms`)
+  //       })
+  //       .catch(err => res.status(400).send(err.message))
+  //   }
+
+  //   return res.status(400).send('EVENT_NOTFOUND')
+  // }
+
   const bookEvent = async (req, res) => {
-    const userId = `${microtime.now()}`
     const title = req.body.parameters['event-title']
     let eventCode
 
@@ -50,11 +79,19 @@ module.exports = (stellar, qrGenerator) => {
     }
 
     if (eventCode) {
-      return stellar.bookEvent(userId, eventCode)
+      console.log(`start book an event: ${eventCode}`)
+      const startTime = Date.now()
+      return stellar.simpleBookEvent(eventCode)
         .then(response => {
+          const timeUsed = Date.now() - startTime
+          console.warn(`booking timeUsed: ${timeUsed} ms`)
           return qrGenerator(response.tx, response.tx).then(url => (response.imgUrl = url, response))
         })
         .then(response => res.status(200).send(toBookResponse(response)))
+        .then(() => {
+          const timeUsed = Date.now() - startTime
+          console.warn(`total timeUsed: ${timeUsed} ms`)
+        })
         .catch(err => res.status(400).send(err.message))
     }
 
@@ -81,7 +118,7 @@ module.exports = (stellar, qrGenerator) => {
     }
     return stellar.confirmTicketByTransaction(txId)
       .then(response => res.status(200).send(response))
-      .catch(err => res.status(400).send(err.message))
+      .catch(err => res.status(400).send('CONFIRM_ERROR: ' + err.message))
   }
 
   const actionMapper = {

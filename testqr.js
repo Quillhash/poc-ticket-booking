@@ -34,7 +34,7 @@ describe('XX', () => {
   it ('done', (done) => {
     new AwesomeQRCode().create({
       text: 'https://catcat.io/api/ticketing/confirm/15790e61ed6990c2af3597607c1b0a32467fcde1b70c2eecae6f52e488683fd3',
-      size: 500,
+      size: 512,
       autoColor: true,
       margin: 10,
       correctLevel: AwesomeQRCode.CorrectLevel.M,

@@ -74,8 +74,13 @@ const ticketingFactory = (stellarWrapper, masterAccount, masterAsset) => {
     return stellarWrapper.queryTransactionMemo(txId)
   }
 
+  const simpleBookEvent = (user, event, amount = 1, uuid = '') => {
+    return stellarWrapper.simpleBookEvent(masterAsset, user, event, amount, `B:${event.asset.getCode()}:${uuid}`)
+  }
+
   return {
     bookTicket,
+    simpleBookEvent,
     queryRemainingTickets,
     queryTicketCount,
     burnTicket,

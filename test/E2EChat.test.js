@@ -24,6 +24,10 @@ const printError = (error) => {
   console.error(error.message)
 }
 
+const section = (name) => {
+  console.log(`*** ${name} ***`)
+}
+
 describe('Ticketing E2E', () => {
   let server, masterAsset
   const masterAssetCode = 'TTTT'
@@ -45,44 +49,44 @@ describe('Ticketing E2E', () => {
 
   })
 
-  it('Organizer creates Event', async () => {
-    const payload = {
-      'code': eventCode,
-      'startDate': '2018-07-11T18:06:59.713Z',
-      'endDate': '2018-07-11T18:06:59.713Z',
-      'title': eventTitle,
-      'description': 'description',
-      'coverImage': 'https://bit.ly/2N8jwHG',
-      'venue': 'One Building',
-      'host': 'One Group',
-      'email': 'someone@example.com',
-      'url': 'http://www.google.com/',
-      'subtitle': 'Saturday, July 28 at 1:00 PM Knowledge Exchange Center - kx',
-      'uuid': 'user unique id',
-      'limit': 2
-    }
+  // it('Organizer creates Event', async () => {
+  //   const payload = {
+  //     'code': eventCode,
+  //     'startDate': '2018-07-11T18:06:59.713Z',
+  //     'endDate': '2018-07-11T18:06:59.713Z',
+  //     'title': eventTitle,
+  //     'description': 'description',
+  //     'coverImage': 'https://bit.ly/2N8jwHG',
+  //     'venue': 'One Building',
+  //     'host': 'One Group',
+  //     'email': 'someone@example.com',
+  //     'url': 'http://www.google.com/',
+  //     'subtitle': 'Saturday, July 28 at 1:00 PM Knowledge Exchange Center - kx',
+  //     'uuid': 'user unique id',
+  //     'limit': 2
+  //   }
 
-    await doRequest('api/organizer/event/create', payload).then(printResult)
-  })
+  //   await doRequest('api/organizer/event/create', payload).then(printResult)
+  // })
 
-  it('Attendee list ticket', async () => {
-    const payload = {
-      'requestSource': 'FACEBOOK',
-      'locale': 'en',
-      'action': 'list.events',
-      'session': 'projects/catcatchatbot/agent/sessions/85b029b6-f847-418a-812a-ae9d5cc146c4',
-      'parameters': {
-        'event-title': ''
-      },
-      'senderId': '2238896416126713'
-    }
+  // it('Attendee list ticket', async () => {
+  //   const payload = {
+  //     'requestSource': 'FACEBOOK',
+  //     'locale': 'en',
+  //     'action': 'list.events',
+  //     'session': 'projects/catcatchatbot/agent/sessions/85b029b6-f847-418a-812a-ae9d5cc146c4',
+  //     'parameters': {
+  //       'event-title': ''
+  //     },
+  //     'senderId': '2238896416126713'
+  //   }
 
-    await doRequest('api/ticketing', payload)
-      .then(printResult)
-  })
+  //   await doRequest('api/ticketing', payload)
+  //     .then(printResult)
+  // })
 
-
-  it('Attendee use ticket by transaction', async () => {
+  it('Attendee book and use ticket by transaction', async () => {
+    const eventTitle = 'Tuesday Evening Ceramics'
     const payload = {
       'requestSource': 'FACEBOOK',
       'locale': 'en',
@@ -93,12 +97,15 @@ describe('Ticketing E2E', () => {
       },
       'senderId': '2238896416126713'
     }
+    section('Book a ticket')
     const bookingResponse = await doRequest('api/ticketing', payload)
     printResult(bookingResponse)
 
+    section('Confirm a ticket')
     const ret = await doRequest(`api/ticketing/confirm/${bookingResponse.tx}`, {}, 'GET')
     printResult(ret)
 
+    section('Use a ticket')
     await doRequest(`api/ticketing/useticket/${ret.tx}`, {}, 'GET')
       .then(printResult).catch(printError)
 

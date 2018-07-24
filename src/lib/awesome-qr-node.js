@@ -1388,7 +1388,7 @@ AwesomeQRCode = function() {};
 
 AwesomeQRCode.prototype.create = function(vOption) {
 
-    console.log(vOption);
+    // console.log(vOption);
     try {
         this._htOption = {
             size: 800,
@@ -1409,7 +1409,7 @@ AwesomeQRCode.prototype.create = function(vOption) {
             callback: undefined
         };
 
-        console.log("validating");
+        // console.log("validating");
         if (typeof vOption === 'string') {
             vOption = {
                 text: vOption

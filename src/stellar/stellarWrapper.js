@@ -285,9 +285,81 @@ module.exports = (server) => {
       })
   }
 
+  // HACK: this is hack
+  const preBookTicket = (masterAccount, masterAsset, user, event, amount, memo) => {
+    return server.loadAccount(masterAccount.publicKey())
+      .then(account => {
+        const transaction = new StellarSdk.TransactionBuilder(account)
+          .addOperation(StellarSdk.Operation.changeTrust({
+            asset: event.asset,
+            source: user.publicKey()
+          }))
+          .addOperation(StellarSdk.Operation.payment({
+            destination: user.publicKey(),
+            asset: masterAsset,
+            amount: `${amount}`
+          }))
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: event.asset,
+            buying: masterAsset,
+            amount: `${amount}`,
+            price: amount,
+            source: event.distributor.publicKey()
+          }))
+          // .addOperation(StellarSdk.Operation.manageOffer({
+          //   selling: masterAsset,
+          //   buying: event.asset,
+          //   amount: `${amount}`,
+          //   price: amount,
+          //   source: user.publicKey()
+          // }))
+          .addMemo(safeMemoText(`${memo ? memo : `prebook:${event.asset.getCode()}`}`))
+          .build()
+
+        transaction.sign(masterSigner)
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        return result.hash
+      })
+      .catch((error) => {
+        const errMsg = `Something went wrong! (preBookTicket): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
+      })
+  }
+
+  // HACK: Simplify book event
+  const simpleBookEvent = (masterAsset, user, event, amount, memo) => {
+    return server.loadAccount(user.publicKey())
+      .then(account => {
+        const transaction = new StellarSdk.TransactionBuilder(account)
+          .addOperation(StellarSdk.Operation.manageOffer({
+            selling: masterAsset,
+            buying: event.asset,
+            amount: `${amount}`,
+            price: amount,
+            source: user.publicKey()
+          }))
+          .addMemo(safeMemoText(`${memo ? memo : `prebook:${event.asset.getCode()}`}`))
+          .build()
+
+        transaction.sign(masterSigner)
+        return server.submitTransaction(transaction)
+      })
+      .then((result) => {
+        return result.hash
+      })
+      .catch((error) => {
+        const errMsg = `Something went wrong! (simpleBookEvent): ${getErrorCode(error)}`
+        console.warn(errMsg)
+        throw new Error(errMsg)
+      })
+  }
+
   const eventCreator = (masterAccount, masterAsset) => async (eventCode, limit) => {
     const issuerAccount = await createChildAccount(masterAccount, 5)
-    const distributorAccount = await createChildAccount(masterAccount, 5)
+    const distributorAccount = await createChildAccount(masterAccount, 500)
     // await changeTrust(distributorAccount, masterAsset, limit)
     // await issueAsset(eventCode, issuerAccount, distributorAccount, limit)
     await doIssueAsset(masterAsset, eventCode, issuerAccount, distributorAccount, limit)
@@ -372,6 +444,8 @@ module.exports = (server) => {
     queryAllAsstes,
     swap,
     doBookTicket,
-    queryTransactionMemo
+    queryTransactionMemo,
+    preBookTicket,
+    simpleBookEvent
   }
 }

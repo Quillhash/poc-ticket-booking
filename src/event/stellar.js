@@ -39,6 +39,10 @@ module.exports = (stellarEngine) => {
     return stellarEngine.confirmTicketByTransaction(txId)
   }
 
+  const simpleBookEvent = (eventId) => {
+    return stellarEngine.simpleBookEvent(eventId)
+  }
+
   return {
     createEvent,
     getAllEvents,
@@ -49,6 +53,7 @@ module.exports = (stellarEngine) => {
     cancelEvent,
     getBookedCount,
     useTicketByTransaction,
-    confirmTicketByTransaction
+    confirmTicketByTransaction,
+    simpleBookEvent
   }
 }

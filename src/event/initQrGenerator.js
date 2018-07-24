@@ -1,6 +1,7 @@
 module.exports = (config) => {
   const AwesomeQRCode = require('../lib/awesome-qr-node')
   const { Image } = require('canvas')
+  const path = require('path')
 
   const UUID = require('uuid-v4')
   const storage = config.firebase.storage()
@@ -10,7 +11,7 @@ module.exports = (config) => {
   const bucketName = config.bucketName
 
   const logo = new Image()
-  logo.src = './logo.png'
+  logo.src = path.join(__dirname, 'logo.png')
 
   const qrGenerator = (name, txData) => new Promise((resolve, reject) => {
 
@@ -27,13 +28,13 @@ module.exports = (config) => {
     }
     new AwesomeQRCode().create({
       text: formatter(txData),
-      size: 500,
+      size: 512,
       autoColor: true,
       margin: 10,
       correctLevel: AwesomeQRCode.CorrectLevel.Q,
       logoImage: logo,
       logoScale: 0.2,
-      logoMargin: 2,
+      logoMargin: 3.5,
       logoCornerRadius: 0,
       callback: (imgData) => {
         if (imgData === undefined) {

@@ -1,14 +1,15 @@
 const { Keypair } = require('stellar-sdk')
 
 class User {
-  constructor(userId, publicKey, uuid = '') {
-    this._userId = userId
-    this._publicKey = publicKey
+  constructor({user_id, account_id, uuid = '', preInit = ''}) {
+    this._userId = user_id
+    this.account_id = account_id
     this._uuid = uuid
+    this._preInit = preInit
   }
 
   get keypair() {
-    return Keypair.fromPublicKey(this._publicKey)
+    return Keypair.fromPublicKey(this.account_id)
   }
 
   get uuid() {
@@ -19,16 +20,25 @@ class User {
     return this._userId
   }
 
+  get preInit() {
+    return this._preInit
+  }
+
+  set preInit(value) {
+    this._preInit = value
+  }
+
   toJSON() {
     return {
       user_id: this._userId,
-      account_id: this._publicKey,
-      uuid: this._uuid
+      account_id: this.account_id,
+      uuid: this._uuid,
+      preInit: this._preInit
     }
   }
 
   static fromJSON(user) {
-    return new User(user.user_id, user.account_id, user.uuid)
+    return new User(user)
   }
 }
 

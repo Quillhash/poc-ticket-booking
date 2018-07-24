@@ -205,10 +205,41 @@ module.exports = (config) => {
       })
   }
 
+  const simpleBookEvent = async (eventCode, amount = 1) => {
+    const event = await eventStore.get(eventCode)
+    if (!event) {
+      return Promise.reject(new Error('EVENT_NOTFOUND'))
+    }
+
+    const remaining = await getRemainingTicket(eventCode)
+
+    if (remaining <= 0) {
+      return Promise.reject(new Error('EVENT_FULL'))
+    }
+
+    return await userStore.getByPreInit(eventCode)
+      .then(user => ticketing.simpleBookEvent(user.keypair, event, amount, user.uuid)
+        .then(async hash => ({
+          tx: hash,
+          uuid: user.uuid,
+          count: await ticketing.queryTicketCount(user.keypair, event),
+        }))
+        .then(ret => {
+          userStore.clearPreInit(user.userId)
+          return ret
+        }))
+      .catch(err => {
+        console.error(err)
+
+        return Promise.reject(new Error('BOOK_ERROR'))
+      })
+  }
+
   return {
     createEvent,
     getAllEvents,
     bookEvent,
+    simpleBookEvent,
     getBookedCount,
     getBookedEvents,
     cancelBooking,
@@ -216,6 +247,12 @@ module.exports = (config) => {
     getRemainingTicket,
     useTicketByTransaction,
     praseBookingMemo,
-    confirmTicketByTransaction
+    confirmTicketByTransaction,
+
+    // temporary solution for MVP
+    stellarWrapper,
+    userStore,
+    eventStore,
+    ticketing
   }
 }
