@@ -4,6 +4,8 @@ coverage/
 .env
 .DS_Store
 
+package-lock.json
+
 user.db
 event.db
 

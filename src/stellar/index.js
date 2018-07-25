@@ -62,11 +62,13 @@ module.exports = (config) => {
 
   const getBookedCount = async (userId, eventCode) => {
     const event = await eventStore.get(eventCode)
+    console.log(event)
     if (!event) {
       return 0
     }
 
     const user = await userStore.get(userId)
+    console.log(user)
     return !user
       ? 0
       : await ticketing.queryTicketCount(user.keypair, event)
@@ -158,14 +160,21 @@ module.exports = (config) => {
   }
 
   const praseBookingMemo = (memo) => {
-    const matcher = new RegExp('B:(?<eventCode>\\w*):(?<uuid>[0-9]*)', 'g')
-    const result = matcher.exec(memo)
+    const empty = {
+      eventCode: '',
+      uuid: '',
+    }
+    if (!memo) { return empty }
 
-    return !result || !result.groups
-      ? null
+    const matcher = /B:(\w*):([0-9]*)/g
+    const result = matcher.exec(memo)
+    console.log(result)
+
+    return result.length < 3
+      ? empty
       : {
-        eventCode: result.groups['eventCode'],
-        uuid: result.groups['uuid']
+        eventCode: result[1],
+        uuid: result[2]
       }
   }
 
@@ -184,6 +193,7 @@ module.exports = (config) => {
 
   const confirmTicketByTransaction = async (txId) => {
     const memo = await ticketing.queryTransactionMemo(txId).catch(() => '')
+    console.log(memo)
     const { eventCode, uuid } = praseBookingMemo(memo)
 
     if (!eventCode || !uuid) {
@@ -191,6 +201,7 @@ module.exports = (config) => {
     }
 
     const user = await userStore.getByUuid(uuid)
+    console.log(user)
 
     return getBookedCount(user.userId, eventCode)
       .then(async count => {

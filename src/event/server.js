@@ -5,9 +5,7 @@ module.exports = (config) => {
 
     const stellar = require('./initStellar')(config)
 
-    const qrGenerator = require('./initQrGenerator')(config)
-
-    const routers = require('./routers')(stellar, qrGenerator)
+    const routers = require('./routers')(stellar)
     app.use('/v1', routers)
 
     console.log('server started')
