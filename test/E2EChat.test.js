@@ -86,7 +86,8 @@ describe('Ticketing E2E', () => {
   // })
 
   it('Attendee book and use ticket by transaction', async () => {
-    const eventTitle = 'Tuesday Evening Ceramics'
+    // const eventTitle = 'Tuesday Evening Ceramics'
+    const eventTitle = 'Satoshi Square - Lightning Network Special'
     const payload = {
       'requestSource': 'FACEBOOK',
       'locale': 'en',
@@ -101,16 +102,16 @@ describe('Ticketing E2E', () => {
     const bookingResponse = await doRequest('api/ticketing', payload)
     printResult(bookingResponse)
 
-    section('Confirm a ticket')
-    const ret = await doRequest(`api/ticketing/confirm/${bookingResponse.tx}`, {}, 'GET')
-    printResult(ret)
+    // section('Confirm a ticket')
+    // const ret = await doRequest(`api/ticketing/confirm/${bookingResponse.tx}`, {}, 'GET')
+    // printResult(ret)
 
-    section('Use a ticket')
-    await doRequest(`api/ticketing/useticket/${ret.tx}`, {}, 'GET')
-      .then(printResult).catch(printError)
+    // section('Use a ticket')
+    // await doRequest(`api/ticketing/useticket/${ret.tx}`, {}, 'GET')
+    //   .then(printResult).catch(printError)
 
-    await doRequest('api/organizer/event/list', {})
-      .then(printResult)
+    // await doRequest('api/organizer/event/list', {})
+    //   .then(printResult)
   })
 
   // it('xx', () => {

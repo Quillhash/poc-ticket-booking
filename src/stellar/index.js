@@ -20,17 +20,18 @@ module.exports = (config) => {
       })
   }
 
-  const getAllEvents = async () => {
-    return eventStore.getAllEvents()
-      .then(events => events.map(e =>
+  const getAllEvents = async (withAvailability = false) => {
+    let allevents = eventStore.getAllEvents()
+    if (withAvailability) {
+      allevents = allevents.then(events => events.map(e =>
         getRemainingTicket(e.code)
           .then(remaining => {
             e.available = remaining
             return e
           })
-      )).then(events =>
-        Promise.all(events)
-      )
+      )).then(events => Promise.all(events))
+    }
+    return allevents
   }
 
   const bookEvent = async (userId, eventCode, amount = 1) => {
@@ -170,7 +171,7 @@ module.exports = (config) => {
 
   const useTicketByTransaction = async (txId) => {
     const memo = await ticketing.queryTransactionMemo(txId).catch(() => '')
-    const {eventCode, uuid} = praseBookingMemo(memo)
+    const { eventCode, uuid } = praseBookingMemo(memo)
 
     if (!eventCode || !uuid) {
       return Promise.reject(new Error('INVALID_TX'))
@@ -183,7 +184,7 @@ module.exports = (config) => {
 
   const confirmTicketByTransaction = async (txId) => {
     const memo = await ticketing.queryTransactionMemo(txId).catch(() => '')
-    const {eventCode, uuid} = praseBookingMemo(memo)
+    const { eventCode, uuid } = praseBookingMemo(memo)
 
     if (!eventCode || !uuid) {
       return Promise.reject(new Error('INVALID_TX'))
@@ -206,24 +207,29 @@ module.exports = (config) => {
   }
 
   const simpleBookEvent = async (eventCode, amount = 1) => {
+    let startTime = Date.now()
     const event = await eventStore.get(eventCode)
     if (!event) {
       return Promise.reject(new Error('EVENT_NOTFOUND'))
     }
 
     const remaining = await getRemainingTicket(eventCode)
+    console.log(`YY getRemainingTicket ${Date.now() - startTime}`); startTime = Date.now()
 
     if (remaining <= 0) {
       return Promise.reject(new Error('EVENT_FULL'))
     }
 
+
     return await userStore.getByPreInit(eventCode)
+      .then(user => { console.log(`YY getUser ${Date.now() - startTime}`); startTime = Date.now(); return user })
       .then(user => ticketing.simpleBookEvent(user.keypair, event, amount, user.uuid)
         .then(async hash => ({
           tx: hash,
           uuid: user.uuid,
-          count: await ticketing.queryTicketCount(user.keypair, event),
+          count: amount // await ticketing.queryTicketCount(user.keypair, event),
         }))
+        .then(ret => { console.log(`YY simpleBookEvent ${Date.now() - startTime}`); return ret; })
         .then(ret => {
           userStore.clearPreInit(user.userId)
           return ret
@@ -235,9 +241,17 @@ module.exports = (config) => {
       })
   }
 
+  const getEventByTitle = async (title) => {
+    let startTime = Date.now()
+    const event = await eventStore.get('GG02')
+    console.log(`getEventByTitle: ${Date.now() - startTime}`)
+    return event
+  }
+
   return {
     createEvent,
     getAllEvents,
+    getEventByTitle,
     bookEvent,
     simpleBookEvent,
     getBookedCount,

@@ -37,10 +37,17 @@ const eventStoreFactory = (eventRepository) => {
     }
   }
 
+  const getByTitle = async (title) => {
+    let events = await eventRepository.query('title', title)
+    return events && events.length > 0 ? Event.fromJSON(events[0]) : null
+
+  }
+
   return {
     setEventCreator,
     getOrCreate,
     getAllEvents,
+    getByTitle,
     get
   }
 }

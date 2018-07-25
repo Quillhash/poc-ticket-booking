@@ -9,16 +9,15 @@
     "test:prod": "ENVIRONMENT=PROD mocha --recursive --timeout 999999 './test/**/*.test.js'",
     "test:watch": "nodemon -x 'npm run test.'",
     "server": "nodemon src/event/index.js",
-    "init": "npm i && npm run server"
+    "init": "npm i && npm run server",
+    "manual": "ENVIRONMENT=PROD mocha --recursive --timeout 999999 './test/manualInitToken.js'"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "awesome-qr": "^1.2.0",
     "base64-js": "^1.3.0",
     "body-parser": "^1.18.3",
-    "chalk": "^2.4.1",
     "claudia-bot-builder": "^4.2.0",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",

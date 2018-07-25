@@ -70,27 +70,32 @@ module.exports = (stellar, qrGenerator) => {
   // }
 
   const bookEvent = async (req, res) => {
+    console.log('XX start book an event')
+    let startTime
+    let firststartTime = startTime = Date.now()
     const title = req.body.parameters['event-title']
     let eventCode
 
     if (title) {
-      const event = await stellar.getAllEvents().then(events => events.find(e => e.title === title))
+      const event = await stellar.getEventByTitle(title)
       eventCode = event ? event.code : ''
+
+      console.warn(`XX get event by name: ${Date.now() - startTime} ms`)
+      startTime = Date.now()
     }
 
     if (eventCode) {
-      console.log(`start book an event: ${eventCode}`)
-      const startTime = Date.now()
       return stellar.simpleBookEvent(eventCode)
         .then(response => {
-          const timeUsed = Date.now() - startTime
-          console.warn(`booking timeUsed: ${timeUsed} ms`)
+          console.warn(`XX booking timeUsed: ${Date.now() - startTime} ms`)
+          startTime = Date.now()
           return qrGenerator(response.tx, response.tx).then(url => (response.imgUrl = url, response))
         })
+        .then(response => {console.warn(`XX qr code: ${Date.now() - startTime} ms`); startTime = Date.now(); return response})
         .then(response => res.status(200).send(toBookResponse(response)))
         .then(() => {
-          const timeUsed = Date.now() - startTime
-          console.warn(`total timeUsed: ${timeUsed} ms`)
+          console.warn(`XX total timeUsed: ${Date.now() - firststartTime} ms`)
+          startTime = Date.now()
         })
         .catch(err => res.status(400).send(err.message))
     }
@@ -136,9 +141,9 @@ module.exports = (stellar, qrGenerator) => {
     return res.status(400).send('INVALID_REQUEST')
   }
 
-  router.post('/', eventHandler)
+  // router.post('/', eventHandler)
   router.get('/confirm/:tx', confirmTicketByTransaction)
-  router.get('/useticket/:tx', useTicketByTransaction)
+  router.get('/checkin/:tx', useTicketByTransaction)
 
   return router
 }

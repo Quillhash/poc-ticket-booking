@@ -7,8 +7,10 @@ const firestoreRepository = (firebase, collectionName) => {
   }
 
   const get = (key) => {
+    let startTime = Date.now()
     return collection.doc(key).get()
       .then(doc => {
+        console.log(`firebase get: ${Date.now() - startTime}`)
         if (!doc.exists) {
           return null
         } else {
@@ -31,7 +33,7 @@ const firestoreRepository = (firebase, collectionName) => {
     return collection.select().get().then(x => x.docs.map(d => d.id))
   }
 
-  const query = (field, value) => {
+  const query = async (field, value) => {
     return collection.where(field, '==', value).get()
       .then(sanpshot => {
         return sanpshot.docs.map(doc => doc.data())

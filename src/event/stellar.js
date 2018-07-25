@@ -3,8 +3,8 @@ module.exports = (stellarEngine) => {
     return stellarEngine.createEvent(event)
   }
 
-  const getAllEvents = () => {
-    return stellarEngine.getAllEvents()
+  const getAllEvents = (withAvailability = false) => {
+    return stellarEngine.getAllEvents(withAvailability)
   }
 
   const bookEvent = (userId, eventId) => {
@@ -43,9 +43,14 @@ module.exports = (stellarEngine) => {
     return stellarEngine.simpleBookEvent(eventId)
   }
 
+  const getEventByTitle = (title) => {
+    return stellarEngine.getEventByTitle(title)
+  }
+
   return {
     createEvent,
     getAllEvents,
+    getEventByTitle,
     bookEvent,
     getBookedEvents,
     cancelBooking,

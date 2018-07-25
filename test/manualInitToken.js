@@ -61,26 +61,48 @@ const section = (name) => {
 //   'limit': 10
 // }]
 
+// {
+//   title: 'Hyperledger 101',
+//   image_url: `https://scontent.fbkk2-2.fna.fbcdn.net/v/t1.0-9/34794693_10155998076087479_3811012266577362944_n.jpg?_nc_cat=0&_nc_eui2=AeFcCK9v87b5B-BbpPAhoU2Ing-_26MwYfyBPCWzHyZMNinVMMR8zYX7yEI42UAiDDPZSa_a2oBus9G59wyCsp8vU3bhCek26GKZ1ygZeIZRng&oh=a37021d18af6f714cf77b43c65324ed7&oe=5BC5D293`,
+//   subtitle: 'Saturday, July 28 at 1:00 PM at HUBBA',
+//   default_action: {
+//     type: 'web_url',
+//     url: 'https://www.facebook.com/events/616312025409172/'
+//   },
+//   buttons: [
+//     {
+//       type: 'web_url',
+//       url: 'https://www.facebook.com/events/616312025409172/',
+//       title: 'See more detail'
+//     },
+//     {
+//       type: 'postback',
+//       title: 'Join Hyperledger 101',
+//       payload: 'Join Hyperledger 101'
+//     }
+//   ]
+// }
+
 const events = [{
-  'code': 'GG01',
-  'startDate': '2018-07-28T09:00:00.000Z',
-  'endDate': '2018-07-28T10:00:00.000Z',
-  'title': 'Tuesday Evening Ceramics',
-  'subtitle': 'Tuesday, July 24, 2018 7:00 PM @House 182',
-  'description': 'Do ceramics at our regular meetup! All skill levels welcome. See all our work ',
-  'coverImage': 'https://secure.meetupstatic.com/photo_api/event/rx1100x800/dt000ddfxff646a/sgc348cff06b/464942367.jpeg',
-  'venue': 'House 182',
-  'host': 'Ross and Jane J.',
-  'email': 'someone@example.com',
-  'url': 'https://www.facebook.com/BangkokPotteryClub',
+  'code': 'HL101',
+  'startDate': '2018-07-28T13:00:00.000Z',
+  'endDate': '2018-07-28T14:00:00.000Z',
+  'title': 'Hyperledger 101',
+  'subtitle': 'Saturday, July 28 at 1:00 PM at HUBBA',
+  'description': '',
+  'coverImage': 'https://scontent.fbkk2-2.fna.fbcdn.net/v/t1.0-9/34794693_10155998076087479_3811012266577362944_n.jpg?_nc_cat=0&_nc_eui2=AeFcCK9v87b5B-BbpPAhoU2Ing-_26MwYfyBPCWzHyZMNinVMMR8zYX7yEI42UAiDDPZSa_a2oBus9G59wyCsp8vU3bhCek26GKZ1ygZeIZRng&oh=a37021d18af6f714cf77b43c65324ed7&oe=5BC5D293',
+  'venue': 'HUBBA',
+  'host': 'HUBBA',
+  'email': 'rabbotioz@gmail.com',
+  'url': 'https://www.facebook.com/events/616312025409172/',
   'uuid': 'user unique id',
-  'limit': 3
+  'limit': 50
 },
 {
-  'code': 'GG02',
+  'code': 'ZZ102',
   'startDate': '2018-07-28T09:00:00.000Z',
   'endDate': '2018-07-28T10:00:00.000Z',
-  'title': 'Satoshi Square - Lightning Network Special',
+  'title': 'Lightning Network Special',
   'subtitle': 'Monday, July 30, 2018 7:00 PM @The Clubhouse Sports Bar & Grill',
   'description': 'Lightning Network 101: Ryan Milbourne will be covering the problem Lightning Network is solving, its advantages and disadvantages, as well as the current state of Lightning Network Development.',
   'coverImage': 'https://secure.meetupstatic.com/photo_api/event/rx1100x800/dt2737ffxffc600/sge64cef73ca/449330933.jpeg',
@@ -89,7 +111,7 @@ const events = [{
   'email': 'someone@example.com',
   'url': 'https://www.meetup.com/Bangkok-Satoshi-Square/events/btqmtpyxkbnc/',
   'uuid': 'user unique id',
-  'limit': 3
+  'limit': 100
 }]
 
 describe('Ticking Manual System Initialization ', () => {

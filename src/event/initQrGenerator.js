@@ -40,12 +40,15 @@ module.exports = (config) => {
         if (imgData === undefined) {
           reject('failed to generate the QR code')
         } else {
+          const retUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(filePath)}?alt=media&token=${uuid}`
+          console.log(retUrl)
+          resolve(retUrl)
           const stream = bucket.file(filePath).createWriteStream(streamOption)
           stream.write(imgData)
           stream.on('finish', () =>{
-            const retUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(filePath)}?alt=media&token=${uuid}`
-            console.log(retUrl)
-            resolve(retUrl)
+            // const retUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(filePath)}?alt=media&token=${uuid}`
+            // console.log(retUrl)
+            // resolve(retUrl)
           })
           stream.end()
         }

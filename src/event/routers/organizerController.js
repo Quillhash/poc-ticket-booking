@@ -23,7 +23,7 @@ module.exports = (stellar) => {
   }
 
   const getAllEvents = (req, res) => {
-    stellar.getAllEvents().then(events => {
+    stellar.getAllEvents(true).then(events => {
       const response = {
         events,
       }

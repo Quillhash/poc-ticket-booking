@@ -331,8 +331,12 @@ module.exports = (server) => {
 
   // HACK: Simplify book event
   const simpleBookEvent = (masterAsset, user, event, amount, memo) => {
+    let startTime = Date.now()
     return server.loadAccount(user.publicKey())
       .then(account => {
+        let t = Date.now() - startTime
+        startTime = Date.now()
+        console.log(`loadAccount: ${t} ms`)
         const transaction = new StellarSdk.TransactionBuilder(account)
           .addOperation(StellarSdk.Operation.manageOffer({
             selling: masterAsset,
@@ -344,10 +348,16 @@ module.exports = (server) => {
           .addMemo(safeMemoText(`${memo ? memo : `prebook:${event.asset.getCode()}`}`))
           .build()
 
+        t = Date.now() - startTime
+        startTime = Date.now()
+        console.log(`buildTransaction: ${t} ms`)
         transaction.sign(masterSigner)
         return server.submitTransaction(transaction)
       })
       .then((result) => {
+        const t = Date.now() - startTime
+        startTime = Date.now()
+        console.log(`submitTransaction: ${t} ms`)
         return result.hash
       })
       .catch((error) => {
